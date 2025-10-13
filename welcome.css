@@ -1,0 +1,72 @@
+/* welcome.css */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+h1 {
+    font-size: 28px;
+    color: white;
+    margin-bottom: 30px;
+    text-align: center;
+    font-weight: 500;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+input[type="text"] {
+    width: 100%;
+    max-width: 350px;
+    padding: 16px 20px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    outline: none;
+    background: white;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+}
+
+input[type="text"]::placeholder {
+    color: #999;
+}
+
+input[type="text"]:focus {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 480px) {
+    h1 {
+        font-size: 24px;
+        margin-bottom: 25px;
+    }
+    
+    input[type="text"] {
+        padding: 14px 18px;
+        font-size: 15px;
+    }
+}
+
+/* Дополнительные стили для очень маленьких экранов */
+@media (max-width: 320px) {
+    h1 {
+        font-size: 20px;
+    }
+    
+    input[type="text"] {
+        padding: 12px 16px;
+    }
+}
