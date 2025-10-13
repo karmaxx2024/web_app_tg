@@ -9,7 +9,7 @@ API_TOKEN = '8473552598:AAHWg8HSnnPTbgtVxkKC4WCiVMh_BRf4kK8'
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher()
 
-WEBAPP_URL = "https://belikof.github.io/web_app/"
+WEBAPP_URL = "https://karmaxx2024.github.io/web_app_tg/"
 
 # Кнопка для меню (слева от поля ввода)
 menu_button = MenuButtonWebApp(text="Открыть WebApp", web_app=WebAppInfo(url=WEBAPP_URL))
