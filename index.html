@@ -1,13 +1,31 @@
 <!DOCTYPE html>
 <html lang="ru">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link href="styles.css" rel="stylesheet">
-        <title>Приветствие</title>
-    </head>
-    <body>
-        <h1>Привет, как вас зовут?</h1>
-        <input type="text" placeholder="Ваше имя">
-    </body>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="styles.css" rel="stylesheet">
+    <title>Приветствие</title>
+</head>
+<body>
+    <!-- Первый экран -->
+    <div id="screen1" class="screen active">
+        <div class="container">
+            <h1>Привет, как вас зовут?</h1>
+            <input type="text" id="nameInput" placeholder="Ваше имя">
+            <button id="continueBtn">продолжить</button>
+        </div>
+    </div>
+
+    <!-- Второй экран -->
+    <div id="screen2" class="screen">
+        <div class="container">
+            <h1>О приложении</h1>
+            <p id="greetingText">Привет, <span id="userNameSpan"></span>!<br>Это приложение<br>запоминания новых слов.<br>ты готов?</p>
+            <button id="readyBtn">я готов!!!</button>
+            <button id="backToFirstBtn" class="back-btn">вернуться назад</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
 </html>
