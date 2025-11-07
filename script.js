@@ -25,7 +25,7 @@ function showScreen(screenToShow) {
     screenToShow.classList.add('active');
 }
 
-// Обработчики событий
+// Обработчики событий для первых двух экранов
 continueBtn.addEventListener('click', () => {
     userName = nameInput.value.trim();
     if (userName) {
@@ -49,15 +49,13 @@ backToSecondBtn.addEventListener('click', () => {
     showScreen(screen2);
 });
 
-// Обработчики для новых кнопок
+// Обработчики для кнопок третьего экрана
 newWordBtn.addEventListener('click', () => {
     alert('Функция "Новое слово" будет реализована позже');
-    // Здесь будет логика для добавления нового слова
 });
 
 studyWordsBtn.addEventListener('click', () => {
     alert('Функция "Изучение слова" будет реализована позже');
-    // Здесь будет логика для изучения слов
 });
 
 // Enter на первом экране
