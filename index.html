@@ -33,7 +33,47 @@
             <p>Привет, <span id="userNameSpan3"></span>!</p>
             <button id="newWordBtn">Новое слово</button>
             <button id="studyWordsBtn">Изучение слова</button>
+            <button id="translatorBtn" class="menu-btn">Переводчик</button>
             <button id="backToSecondBtn" class="back-btn">вернуться назад</button>
+        </div>
+    </div>
+
+    <!-- Четвертый экран - Переводчик -->
+    <div id="screen4" class="screen">
+        <div class="container">
+            <h1>Переводчик</h1>
+            <div class="translator-container">
+                <div class="language-selectors">
+                    <select id="sourceLang" class="lang-select">
+                        <option value="ru">Русский</option>
+                        <option value="en">Английский</option>
+                        <option value="es">Испанский</option>
+                        <option value="fr">Французский</option>
+                        <option value="de">Немецкий</option>
+                        <option value="zh">Китайский</option>
+                        <option value="ja">Японский</option>
+                    </select>
+                    <button id="swapLangs" class="swap-btn">⇄</button>
+                    <select id="targetLang" class="lang-select">
+                        <option value="en">Английский</option>
+                        <option value="ru">Русский</option>
+                        <option value="es">Испанский</option>
+                        <option value="fr">Французский</option>
+                        <option value="de">Немецкий</option>
+                        <option value="zh">Китайский</option>
+                        <option value="ja">Японский</option>
+                    </select>
+                </div>
+                
+                <textarea id="sourceText" placeholder="Введите текст для перевода..." class="translation-input"></textarea>
+                
+                <button id="translateBtn" class="translate-btn">Перевести</button>
+                
+                <div id="translationResult" class="translation-result">
+                    <p>Результат перевода появится здесь...</p>
+                </div>
+            </div>
+            <button id="backToThirdBtn" class="back-btn">вернуться назад</button>
         </div>
     </div>
 
