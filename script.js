@@ -1,57 +1,68 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // Получаем элементы
-    const screen1 = document.getElementById('screen1');
-    const screen2 = document.getElementById('screen2');
-    const nameInput = document.getElementById('nameInput');
-    const continueBtn = document.getElementById('continueBtn');
-    const readyBtn = document.getElementById('readyBtn');
-    const backToFirstBtn = document.getElementById('backToFirstBtn');
-    const greetingText = document.getElementById('greetingText');
-    const userNameSpan = document.getElementById('userNameSpan');
+// Получаем элементы
+const screen1 = document.getElementById('screen1');
+const screen2 = document.getElementById('screen2');
+const screen3 = document.getElementById('screen3');
+const nameInput = document.getElementById('nameInput');
+const continueBtn = document.getElementById('continueBtn');
+const readyBtn = document.getElementById('readyBtn');
+const backToFirstBtn = document.getElementById('backToFirstBtn');
+const backToSecondBtn = document.getElementById('backToSecondBtn');
+const newWordBtn = document.getElementById('newWordBtn');
+const studyWordsBtn = document.getElementById('studyWordsBtn');
+const userNameSpan = document.getElementById('userNameSpan');
+const userNameSpan3 = document.getElementById('userNameSpan3');
 
-    // Обработчик кнопки "продолжить"
-    continueBtn.addEventListener('click', function() {
-        const userName = nameInput.value.trim();
-        
-        // Проверяем, что имя не пустое
-        if (userName === '') {
-            alert('Пожалуйста, введите ваше имя!');
-            nameInput.focus();
-            return;
-        }
+let userName = '';
 
-        // Обновляем текст приветствия
+// Функция для переключения экранов
+function showScreen(screenToShow) {
+    // Скрываем все экраны
+    document.querySelectorAll('.screen').forEach(screen => {
+        screen.classList.remove('active');
+    });
+    
+    // Показываем нужный экран
+    screenToShow.classList.add('active');
+}
+
+// Обработчики событий
+continueBtn.addEventListener('click', () => {
+    userName = nameInput.value.trim();
+    if (userName) {
         userNameSpan.textContent = userName;
-        
-        // Переключаем экраны
-        screen1.classList.remove('active');
-        screen2.classList.add('active');
-    });
+        showScreen(screen2);
+    } else {
+        alert('Пожалуйста, введите ваше имя');
+    }
+});
 
-    // Обработчик кнопки "я готов!!!"
-    readyBtn.addEventListener('click', function() {
-        const userName = nameInput.value.trim();
-        alert(`Отлично, ${userName}! Давайте начнем изучение слов!`);
-        // Здесь можно добавить переход к следующему функционалу приложения
-    });
+readyBtn.addEventListener('click', () => {
+    userNameSpan3.textContent = userName;
+    showScreen(screen3);
+});
 
-    // Обработчик кнопки "вернуться назад"
-    backToFirstBtn.addEventListener('click', function() {
-        // Переключаем экраны
-        screen2.classList.remove('active');
-        screen1.classList.add('active');
-        
-        // Возвращаем фокус на поле ввода
-        nameInput.focus();
-    });
+backToFirstBtn.addEventListener('click', () => {
+    showScreen(screen1);
+});
 
-    // Разрешаем нажимать кнопку "продолжить" по нажатию Enter
-    nameInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            continueBtn.click();
-        }
-    });
+backToSecondBtn.addEventListener('click', () => {
+    showScreen(screen2);
+});
 
-    // Фокус на поле ввода при загрузке страницы
-    nameInput.focus();
+// Обработчики для новых кнопок
+newWordBtn.addEventListener('click', () => {
+    alert('Функция "Новое слово" будет реализована позже');
+    // Здесь будет логика для добавления нового слова
+});
+
+studyWordsBtn.addEventListener('click', () => {
+    alert('Функция "Изучение слова" будет реализована позже');
+    // Здесь будет логика для изучения слов
+});
+
+// Enter на первом экране
+nameInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        continueBtn.click();
+    }
 });
