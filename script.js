@@ -33,6 +33,16 @@ function showScreen(screenToShow) {
     screenToShow.classList.add('active');
 }
 
+document.addEventListener('DOMContentLoaded', function() {
+    const savedName = localStorage.getItem('userName');
+
+    if (savedName) {
+        userName = savedName;
+        userNameSpan3.textContent = userName;
+        showScreen(screen3);
+    }
+});
+
 // Обработчики событий для навигации
 continueBtn.addEventListener('click', () => {
     userName = nameInput.value.trim();
