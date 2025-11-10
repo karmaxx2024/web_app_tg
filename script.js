@@ -14,8 +14,6 @@ const studyWordsBtn = document.getElementById('studyWordsBtn');
 const translatorBtn = document.getElementById('translatorBtn');
 const userNameSpan = document.getElementById('userNameSpan');
 const userNameSpan3 = document.getElementById('userNameSpan3');
-const tg = window.Telegram?.WebApp;
-
 
 // Элементы переводчика
 const sourceLang = document.getElementById('sourceLang');
@@ -35,121 +33,92 @@ function showScreen(screenToShow) {
     screenToShow.classList.add('active');
 }
 
+// ПРИ ЗАГРУЗКЕ ПРОВЕРЯЕМ НОВЫЙ ПОЛЬЗОВАТЕЛЬ ИЛИ СТАРЫЙ
 document.addEventListener('DOMContentLoaded', function() {
-    const tg = window.Telegram?.WebApp;
+    const savedName = localStorage.getItem('userName');
     
-    if (tg && tg.initDataUnsafe?.user) {
-        const telegramUser = tg.initDataUnsafe.user;
-        userName = telegramUser.first_name || 'Пользователь';
+    if (savedName) {
+        // СТАРЫЙ ПОЛЬЗОВАТЕЛЬ - сразу показываем экран выбора режима
+        userName = savedName;
+        userNameSpan3.textContent = userName;
+        showScreen(screen3); // сразу на экран с выбором режима
+    } else {
+        // НОВЫЙ ПОЛЬЗОВАТЕЛЬ - показываем экран ввода имени
+        showScreen(screen1);
+        nameInput.focus(); // фокус на поле ввода
+    }
+});
 
+// Обработчики событий для навигации
+continueBtn.addEventListener('click', () => {
+    userName = nameInput.value.trim();
+    if (userName) {
+        // Сохраняем имя для будущих посещений
         localStorage.setItem('userName', userName);
+        userNameSpan.textContent = userName;
+        showScreen(screen2); // переходим к описанию приложения
+    } else {
+        alert('Пожалуйста, введите ваше имя');
+    }
+});
 
-        if (userNameSpan3) {
-            userNameSpan3.textContent = userName;
-        }
-        showScreen(screen3);
+readyBtn.addEventListener('click', () => {
+    userNameSpan3.textContent = userName;
+    showScreen(screen3); // переходим к выбору режима
+});
+
+backToFirstBtn.addEventListener('click', () => {
+    showScreen(screen1);
+});
+
+backToSecondBtn.addEventListener('click', () => {
+    showScreen(screen2);
+});
+
+backToThirdBtn.addEventListener('click', () => {
+    showScreen(screen3);
+});
+
+// Обработчики для кнопок третьего экрана
+newWordBtn.addEventListener('click', () => {
+    alert('Функция "Новое слово" будет реализована позже');
+});
+
+studyWordsBtn.addEventListener('click', () => {
+    alert('Функция "Изучение слова" будет реализована позже');
+});
+
+translatorBtn.addEventListener('click', () => {
+    showScreen(screen4);
+});
+
+// Логика переводчика
+swapLangs.addEventListener('click', () => {
+    const tempLang = sourceLang.value;
+    sourceLang.value = targetLang.value;
+    targetLang.value = tempLang;
+});
+
+translateBtn.addEventListener('click', async () => {
+    const text = sourceText.value.trim();
+    const fromLang = sourceLang.value;
+    const toLang = targetLang.value;
+
+    if (!text) {
+        translationResult.innerHTML = '<p>Пожалуйста, введите текст для перевода</p>';
         return;
     }
 
-    const savedName = localStorage.getItem('userName');
-    if (savedName) {
-        userName = savedName;
-        if (userNameSpan3) {
-            userNameSpan3.textContent = userName;
-        }
-        showScreen(screen3)
-    } else {
-        showScreen(screen1);
-        if (nameInput) {
-            nameInput.focus();
-        }
+    // Показываем загрузку
+    translationResult.innerHTML = '<p>Переводим...</p>';
+
+    try {
+        const translatedText = await translateText(text, fromLang, toLang);
+        translationResult.innerHTML = `<p><strong>Перевод:</strong><br>${translatedText}</p>`;
+    } catch (error) {
+        console.error('Ошибка перевода:', error);
+        translationResult.innerHTML = '<p>Ошибка перевода. Попробуйте еще раз.</p>';
     }
-
-    // Обработчики событий для навигации
-    continueBtn.addEventListener('click', () => {
-        userName = nameInput.value.trim();
-        if (userName) {
-            // Сохраняем имя для будущих посещений
-            localStorage.setItem('userName', userName);
-            userNameSpan.textContent = userName;
-            showScreen(screen2); // переходим к описанию приложения
-        } else {
-            alert('Пожалуйста, введите ваше имя');
-        }
-    });
-
-    readyBtn.addEventListener('click', () => {
-        userNameSpan3.textContent = userName;
-        showScreen(screen3); // переходим к выбору режима
-    });
-
-    backToFirstBtn.addEventListener('click', () => {
-        showScreen(screen1);
-    });
-
-    backToSecondBtn.addEventListener('click', () => {
-        showScreen(screen2);
-    });
-
-    backToThirdBtn.addEventListener('click', () => {
-        showScreen(screen3);
-    });
-
-    // Обработчики для кнопок третьего экрана
-    newWordBtn.addEventListener('click', () => {
-        alert('Функция "Новое слово" будет реализована позже');
-    });
-
-    studyWordsBtn.addEventListener('click', () => {
-        alert('Функция "Изучение слова" будет реализована позже');
-    });
-
-    translatorBtn.addEventListener('click', () => {
-        showScreen(screen4);
-    });
-
-    // Логика переводчика
-    swapLangs.addEventListener('click', () => {
-        const tempLang = sourceLang.value;
-        sourceLang.value = targetLang.value;
-        targetLang.value = tempLang;
-    });
-
-    translateBtn.addEventListener('click', async () => {
-        const text = sourceText.value.trim();
-        const fromLang = sourceLang.value;
-        const toLang = targetLang.value;
-
-        if (!text) {
-            translationResult.innerHTML = '<p>Пожалуйста, введите текст для перевода</p>';
-            return;
-        }
-
-        // Показываем загрузку
-        translationResult.innerHTML = '<p>Переводим...</p>';
-
-        try {
-            const translatedText = await translateText(text, fromLang, toLang);
-            translationResult.innerHTML = `<p><strong>Перевод:</strong><br>${translatedText}</p>`;
-        } catch (error) {
-            console.error('Ошибка перевода:', error);
-            translationResult.innerHTML = '<p>Ошибка перевода. Попробуйте еще раз.</p>';
-        }
-    });
-
-    // Enter на первом экране
-    nameInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            continueBtn.click();
-        }
-    });
-
-    // Enter в поле ввода переводчика (Ctrl+Enter для перевода)
-    sourceText.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter' && e.ctrlKey) {
-            translateBtn.click();
-        }
-    });
 });
 
 // Улучшенная функция для перевода текста
@@ -229,10 +198,16 @@ function getDemoTranslation(text, sourceLang, targetLang) {
     return `[Демо] Перевод "${text}" с ${sourceLang} на ${targetLang}`;
 }
 
-// Функция для очистки localStorage (для тестирования)
-function clearStorage() {
-    localStorage.removeItem('userName');
-    alert('LocalStorage очищен! Обнови страницу.');
-    location.reload();
-}
+// Enter на первом экране
+nameInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        continueBtn.click();
+    }
+});
 
+// Enter в поле ввода переводчика (Ctrl+Enter для перевода)
+sourceText.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter' && e.ctrlKey) {
+        translateBtn.click();
+    }
+});
