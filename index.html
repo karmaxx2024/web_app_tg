@@ -17,6 +17,7 @@
     </div>
 
     <!-- Второй экран -->
+
     <div id="screen2" class="screen">
         <div class="container">
             <h1>О приложении</h1>
@@ -74,6 +75,34 @@
                 </div>
             </div>
             <button id="backToThirdBtn" class="back-btn">вернуться назад</button>
+        </div>
+    </div>
+    <!-- пятый экран - новое слово -->
+    <div id="screen5" class="screen">
+        <div class="container">
+            <h1>Напишите своё новое слово<h1>
+            <input type="text" id="englishWordInput" placeholder="ваше слово">
+            <button id="continueBtn">продолжить</button>
+        </div>
+    </div>
+
+    <!-- шестой экран - перевод -->
+    <div id="screen6" class="screen">
+        <div class="container">
+            <h1>Напишите перевод<h1>
+            <p>Слово: <span id="currentEnglishWord"></span></p>
+            <input type="text" id="russianWordInput" placeholder="ваш перевод">
+            <button id="toExampleBtn">продолжить</button>
+        </div>
+    </div>
+
+    <!-- седьмой экран - пример -->
+    <div id="screen7" class="screen">
+        <div class="container">
+            <h1>Напишите свой пример<h1>
+            <p>Слово: <span id="currentWordDisplay"></span> - <span id="currentTransalationDisplay"></span></p>
+            <input type="text" id="exampleInput" placeholder="ваш пример"> 
+            <button id="saveWordBtn">сохранить слово</button>
         </div>
     </div>
 
