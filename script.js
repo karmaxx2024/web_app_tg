@@ -33,30 +33,12 @@ function showScreen(screenToShow) {
     screenToShow.classList.add('active');
 }
 
-// ПРИ ЗАГРУЗКЕ ПРОВЕРЯЕМ НОВЫЙ ПОЛЬЗОВАТЕЛЬ ИЛИ СТАРЫЙ
-document.addEventListener('DOMContentLoaded', function() {
-    const savedName = localStorage.getItem('userName');
-    
-    if (savedName) {
-        // СТАРЫЙ ПОЛЬЗОВАТЕЛЬ - сразу показываем экран выбора режима
-        userName = savedName;
-        userNameSpan3.textContent = userName;
-        showScreen(screen3); // сразу на экран с выбором режима
-    } else {
-        // НОВЫЙ ПОЛЬЗОВАТЕЛЬ - показываем экран ввода имени
-        showScreen(screen1);
-        nameInput.focus(); // фокус на поле ввода
-    }
-});
-
 // Обработчики событий для навигации
 continueBtn.addEventListener('click', () => {
     userName = nameInput.value.trim();
     if (userName) {
-        // Сохраняем имя для будущих посещений
-        localStorage.setItem('userName', userName);
         userNameSpan.textContent = userName;
-        showScreen(screen2); // переходим к описанию приложения
+        showScreen(screen2);
     } else {
         alert('Пожалуйста, введите ваше имя');
     }
@@ -64,7 +46,7 @@ continueBtn.addEventListener('click', () => {
 
 readyBtn.addEventListener('click', () => {
     userNameSpan3.textContent = userName;
-    showScreen(screen3); // переходим к выбору режима
+    showScreen(screen3);
 });
 
 backToFirstBtn.addEventListener('click', () => {
