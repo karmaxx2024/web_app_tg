@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const telegramUser = tg.initDataUnsafe.user;
         userName = telegramUser.first_name || 'Пользователь';
 
-        localStorage.setItem(''userName', userName);
+        localStorage.setItem('userName', userName);
 
         if (userNameSpan3) {
             userNameSpan3.textContent = userName;
@@ -235,3 +235,4 @@ function clearStorage() {
     alert('LocalStorage очищен! Обнови страницу.');
     location.reload();
 }
+
