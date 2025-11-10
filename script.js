@@ -14,6 +14,8 @@ const studyWordsBtn = document.getElementById('studyWordsBtn');
 const translatorBtn = document.getElementById('translatorBtn');
 const userNameSpan = document.getElementById('userNameSpan');
 const userNameSpan3 = document.getElementById('userNameSpan3');
+const tg = window.Telegram?.WebApp;
+
 
 // Элементы переводчика
 const sourceLang = document.getElementById('sourceLang');
@@ -34,14 +36,28 @@ function showScreen(screenToShow) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    const savedName = localStorage.getItem('userName');
+    const tg = window.Telegram?.WebApp;
     
+    if (tg && tg.initDataUnsafe?.user) {
+        const telegramUser = tg.initDataUnsafe.user;
+        userName = telegramUser.first_name || 'Пользователь';
+
+        localStorage.setItem(''userName', userName);
+
+        if (userNameSpan3) {
+            userNameSpan3.textContent = userName;
+        }
+        showScreen(screen3);
+        return;
+    }
+
+    const savedName = localStorage.getItem('userName');
     if (savedName) {
         userName = savedName;
         if (userNameSpan3) {
             userNameSpan3.textContent = userName;
         }
-        showScreen(screen3); 
+        showScreen(screen3)
     } else {
         showScreen(screen1);
         if (nameInput) {
