@@ -3,17 +3,36 @@ const screen1 = document.getElementById('screen1');
 const screen2 = document.getElementById('screen2');
 const screen3 = document.getElementById('screen3');
 const screen4 = document.getElementById('screen4');
+const screen5 = document.getElementById('screen5');
+const screen6 = document.getElementById('screen6');
+const screen7 = document.getElementById('screen7');
+
 const nameInput = document.getElementById('nameInput');
-const continueBtn = document.getElementById('continueBtn');
+const continueBtn1 = document.getElementById('continueBtn1');
+const continueBtn5 = document.getElementById('continueBtn5');
 const readyBtn = document.getElementById('readyBtn');
 const backToFirstBtn = document.getElementById('backToFirstBtn');
 const backToSecondBtn = document.getElementById('backToSecondBtn');
 const backToThirdBtn = document.getElementById('backToThirdBtn');
+const backToThirdFrom5 = document.getElementById('backToThirdFrom5');
+const backToFifthBtn = document.getElementById('backToFifthBtn');
+const backToSixthBtn = document.getElementById('backToSixthBtn');
+
 const newWordBtn = document.getElementById('newWordBtn');
 const studyWordsBtn = document.getElementById('studyWordsBtn');
 const translatorBtn = document.getElementById('translatorBtn');
 const userNameSpan = document.getElementById('userNameSpan');
 const userNameSpan3 = document.getElementById('userNameSpan3');
+
+// Элементы для новых слов
+const englishWordInput = document.getElementById('englishWordInput');
+const russianWordInput = document.getElementById('russianWordInput');
+const toExampleBtn = document.getElementById('toExampleBtn');
+const currentEnglishWord = document.getElementById('currentEnglishWord');
+const currentWordDisplay = document.getElementById('currentWordDisplay');
+const currentTranslationDisplay = document.getElementById('currentTranslationDisplay');
+const exampleInput = document.getElementById('exampleInput');
+const saveWordBtn = document.getElementById('saveWordBtn');
 
 // Элементы переводчика
 const sourceLang = document.getElementById('sourceLang');
@@ -24,6 +43,8 @@ const translateBtn = document.getElementById('translateBtn');
 const translationResult = document.getElementById('translationResult');
 
 let userName = '';
+let currentEnglishWordValue = '';
+let currentRussianWordValue = '';
 
 // Функция для переключения экранов
 function showScreen(screenToShow) {
@@ -34,7 +55,7 @@ function showScreen(screenToShow) {
 }
 
 // Обработчики событий для навигации
-continueBtn.addEventListener('click', () => {
+continueBtn1.addEventListener('click', () => {
     userName = nameInput.value.trim();
     if (userName) {
         userNameSpan.textContent = userName;
@@ -63,7 +84,8 @@ backToThirdBtn.addEventListener('click', () => {
 
 // Обработчики для кнопок третьего экрана
 newWordBtn.addEventListener('click', () => {
-    alert('Функция "Новое слово" будет реализована позже');
+    showScreen(screen5);
+    englishWordInput.value = ''; // Очищаем поле при каждом входе
 });
 
 studyWordsBtn.addEventListener('click', () => {
@@ -73,6 +95,72 @@ studyWordsBtn.addEventListener('click', () => {
 translatorBtn.addEventListener('click', () => {
     showScreen(screen4);
 });
+
+// Обработчики для экранов 5-6-7
+continueBtn5.addEventListener('click', () => {
+    currentEnglishWordValue = englishWordInput.value.trim();
+    if (currentEnglishWordValue) {
+        currentEnglishWord.textContent = currentEnglishWordValue;
+        showScreen(screen6);
+        russianWordInput.value = ''; // Очищаем поле перевода
+    } else {
+        alert('Пожалуйста, введите слово на английском');
+    }
+});
+
+toExampleBtn.addEventListener('click', () => {
+    currentRussianWordValue = russianWordInput.value.trim();
+    if (currentRussianWordValue) {
+        currentWordDisplay.textContent = currentEnglishWordValue;
+        currentTranslationDisplay.textContent = currentRussianWordValue;
+        showScreen(screen7);
+        exampleInput.value = ''; // Очищаем поле примера
+    } else {
+        alert('Пожалуйста, введите перевод слова');
+    }
+});
+
+saveWordBtn.addEventListener('click', () => {
+    const example = exampleInput.value.trim();
+    
+    // Создаем объект слова
+    const wordData = {
+        english: currentEnglishWordValue,
+        russian: currentRussianWordValue,
+        example: example || 'Пример не добавлен',
+        date: new Date().toLocaleDateString()
+    };
+    
+    // Сохраняем в localStorage
+    saveWordToStorage(wordData);
+    
+    alert(`Слово "${currentEnglishWordValue}" успешно сохранено!`);
+    
+    // Возвращаемся на экран 3
+    showScreen(screen3);
+});
+
+// Навигация назад между экранами 5-6-7
+backToThirdFrom5.addEventListener('click', () => {
+    showScreen(screen3);
+});
+
+backToFifthBtn.addEventListener('click', () => {
+    showScreen(screen5);
+});
+
+backToSixthBtn.addEventListener('click', () => {
+    showScreen(screen6);
+});
+
+// Функция для сохранения слова в localStorage
+function saveWordToStorage(wordData) {
+    let words = JSON.parse(localStorage.getItem('userWords') || '[]');
+    words.push(wordData);
+    localStorage.setItem('userWords', JSON.stringify(words));
+    console.log('Слово сохранено:', wordData);
+    console.log('Все слова:', words);
+}
 
 // Логика переводчика
 swapLangs.addEventListener('click', () => {
@@ -180,10 +268,28 @@ function getDemoTranslation(text, sourceLang, targetLang) {
     return `[Демо] Перевод "${text}" с ${sourceLang} на ${targetLang}`;
 }
 
-// Enter на первом экране
+// Обработчики клавиши Enter
 nameInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
-        continueBtn.click();
+        continueBtn1.click();
+    }
+});
+
+englishWordInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        continueBtn5.click();
+    }
+});
+
+russianWordInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        toExampleBtn.click();
+    }
+});
+
+exampleInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        saveWordBtn.click();
     }
 });
 
@@ -192,4 +298,12 @@ sourceText.addEventListener('keypress', (e) => {
     if (e.key === 'Enter' && e.ctrlKey) {
         translateBtn.click();
     }
+});
+
+// Инициализация при загрузке
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Приложение загружено!');
+    // Можно добавить загрузку сохраненных слов при необходимости
+    const savedWords = JSON.parse(localStorage.getItem('userWords') || '[]');
+    console.log('Сохраненные слова:', savedWords);
 });
