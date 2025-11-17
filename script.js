@@ -42,17 +42,104 @@ const sourceText = document.getElementById('sourceText');
 const translateBtn = document.getElementById('translateBtn');
 const translationResult = document.getElementById('translationResult');
 
+// Конфетти
+const confettiCanvas = document.getElementById('confettiCanvas');
+
 let userName = '';
 let currentEnglishWordValue = '';
 let currentRussianWordValue = '';
 
-// Функция для переключения экранов
-function showScreen(screenToShow) {
-    document.querySelectorAll('.screen').forEach(screen => {
-        screen.classList.remove('active');
-    });
-    screenToShow.classList.add('active');
+// Инициализация конфетти
+function initConfetti() {
+    confettiCanvas.width = window.innerWidth;
+    confettiCanvas.height = window.innerHeight;
 }
+
+// Функция для запуска конфетти
+function launchConfetti() {
+    const ctx = confettiCanvas.getContext('2d');
+    const particles = [];
+    const particleCount = 150;
+    
+    for (let i = 0; i < particleCount; i++) {
+        particles.push({
+            x: Math.random() * confettiCanvas.width,
+            y: Math.random() * confettiCanvas.height - confettiCanvas.height,
+            size: Math.random() * 10 + 5,
+            speed: Math.random() * 3 + 2,
+            color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+            rotation: Math.random() * 360,
+            rotationSpeed: Math.random() * 10 - 5
+        });
+    }
+    
+    function animate() {
+        ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+        
+        let particlesAlive = false;
+        
+        particles.forEach(particle => {
+            particle.y += particle.speed;
+            particle.rotation += particle.rotationSpeed;
+            
+            if (particle.y < confettiCanvas.height) {
+                particlesAlive = true;
+            }
+            
+            ctx.save();
+            ctx.translate(particle.x, particle.y);
+            ctx.rotate(particle.rotation * Math.PI / 180);
+            ctx.fillStyle = particle.color;
+            ctx.fillRect(-particle.size / 2, -particle.size / 2, particle.size, particle.size);
+            ctx.restore();
+        });
+        
+        if (particlesAlive) {
+            requestAnimationFrame(animate);
+        }
+    }
+    
+    animate();
+}
+
+// Улучшенная функция для переключения экранов с анимацией
+function showScreen(screenToShow) {
+    const currentScreen = document.querySelector('.screen.active');
+    
+    if (currentScreen) {
+        // Анимация исчезновения текущего экрана
+        currentScreen.style.animation = 'screenSlideOut 0.4s ease-in forwards';
+        
+        setTimeout(() => {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            
+            // Анимация появления нового экрана
+            screenToShow.classList.add('active');
+            screenToShow.style.animation = 'screenSlideIn 0.6s ease-out';
+            
+        }, 400);
+    } else {
+        screenToShow.classList.add('active');
+    }
+}
+
+// Добавляем CSS для анимации исчезновения
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes screenSlideOut {
+        from {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+        to {
+            opacity: 0;
+            transform: translateY(-50px) scale(0.95);
+        }
+    }
+`;
+document.head.appendChild(style);
 
 // Обработчики событий для навигации
 continueBtn1.addEventListener('click', () => {
@@ -61,7 +148,23 @@ continueBtn1.addEventListener('click', () => {
         userNameSpan.textContent = userName;
         showScreen(screen2);
     } else {
-        alert('Пожалуйста, введите ваше имя');
+        // Анимация shake для пустого поля
+        nameInput.style.animation = 'shake 0.5s ease-in-out';
+        setTimeout(() => nameInput.style.animation = '', 500);
+        
+        // Добавляем CSS для shake анимации
+        if (!document.querySelector('#shake-animation')) {
+            const shakeStyle = document.createElement('style');
+            shakeStyle.id = 'shake-animation';
+            shakeStyle.textContent = `
+                @keyframes shake {
+                    0%, 100% { transform: translateX(0); }
+                    25% { transform: translateX(-10px); }
+                    75% { transform: translateX(10px); }
+                }
+            `;
+            document.head.appendChild(shakeStyle);
+        }
     }
 });
 
@@ -85,11 +188,16 @@ backToThirdBtn.addEventListener('click', () => {
 // Обработчики для кнопок третьего экрана
 newWordBtn.addEventListener('click', () => {
     showScreen(screen5);
-    englishWordInput.value = ''; // Очищаем поле при каждом входе
+    englishWordInput.value = '';
 });
 
 studyWordsBtn.addEventListener('click', () => {
-    alert('Функция "Изучение слова" будет реализована позже');
+    const savedWords = JSON.parse(localStorage.getItem('userWords') || '[]');
+    if (savedWords.length > 0) {
+        alert(`У вас ${savedWords.length} сохраненных слов! Функция изучения в разработке.`);
+    } else {
+        alert('У вас пока нет сохраненных слов. Добавьте сначала новые слова.');
+    }
 });
 
 translatorBtn.addEventListener('click', () => {
@@ -102,9 +210,10 @@ continueBtn5.addEventListener('click', () => {
     if (currentEnglishWordValue) {
         currentEnglishWord.textContent = currentEnglishWordValue;
         showScreen(screen6);
-        russianWordInput.value = ''; // Очищаем поле перевода
+        russianWordInput.value = '';
     } else {
-        alert('Пожалуйста, введите слово на английском');
+        englishWordInput.style.animation = 'shake 0.5s ease-in-out';
+        setTimeout(() => englishWordInput.style.animation = '', 500);
     }
 });
 
@@ -114,31 +223,81 @@ toExampleBtn.addEventListener('click', () => {
         currentWordDisplay.textContent = currentEnglishWordValue;
         currentTranslationDisplay.textContent = currentRussianWordValue;
         showScreen(screen7);
-        exampleInput.value = ''; // Очищаем поле примера
+        exampleInput.value = '';
     } else {
-        alert('Пожалуйста, введите перевод слова');
+        russianWordInput.style.animation = 'shake 0.5s ease-in-out';
+        setTimeout(() => russianWordInput.style.animation = '', 500);
     }
 });
 
 saveWordBtn.addEventListener('click', () => {
     const example = exampleInput.value.trim();
     
-    // Создаем объект слова
     const wordData = {
         english: currentEnglishWordValue,
         russian: currentRussianWordValue,
         example: example || 'Пример не добавлен',
-        date: new Date().toLocaleDateString()
+        date: new Date().toLocaleDateString('ru-RU')
     };
     
-    // Сохраняем в localStorage
     saveWordToStorage(wordData);
     
-    alert(`Слово "${currentEnglishWordValue}" успешно сохранено!`);
+    // Запускаем конфетти при успешном сохранении
+    launchConfetti();
     
-    // Возвращаемся на экран 3
-    showScreen(screen3);
+    // Показываем анимированное сообщение
+    showAnimatedMessage(`Слово "${currentEnglishWordValue}" успешно сохранено!`, 'success');
+    
+    setTimeout(() => {
+        showScreen(screen3);
+    }, 2000);
 });
+
+// Функция для показа анимированных сообщений
+function showAnimatedMessage(message, type) {
+    const messageEl = document.createElement('div');
+    messageEl.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: ${type === 'success' ? 'linear-gradient(135deg, #4CAF50, #45a049)' : 'linear-gradient(135deg, #ff6b6b, #ee5a52)'};
+        color: white;
+        padding: 20px 30px;
+        border-radius: 15px;
+        font-weight: 600;
+        z-index: 1001;
+        animation: messagePop 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    `;
+    messageEl.textContent = message;
+    
+    document.body.appendChild(messageEl);
+    
+    setTimeout(() => {
+        messageEl.remove();
+    }, 2000);
+}
+
+// Добавляем CSS для анимации сообщений
+const messageStyle = document.createElement('style');
+messageStyle.textContent = `
+    @keyframes messagePop {
+        0% {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.5);
+        }
+        70% {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+        100% {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+    }
+`;
+document.head.appendChild(messageStyle);
 
 // Навигация назад между экранами 5-6-7
 backToThirdFrom5.addEventListener('click', () => {
@@ -158,8 +317,6 @@ function saveWordToStorage(wordData) {
     let words = JSON.parse(localStorage.getItem('userWords') || '[]');
     words.push(wordData);
     localStorage.setItem('userWords', JSON.stringify(words));
-    console.log('Слово сохранено:', wordData);
-    console.log('Все слова:', words);
 }
 
 // Логика переводчика
@@ -167,6 +324,12 @@ swapLangs.addEventListener('click', () => {
     const tempLang = sourceLang.value;
     sourceLang.value = targetLang.value;
     targetLang.value = tempLang;
+    
+    // Анимация для кнопки swap
+    swapLangs.style.transform = 'rotate(180deg) scale(1.1)';
+    setTimeout(() => {
+        swapLangs.style.transform = '';
+    }, 400);
 });
 
 translateBtn.addEventListener('click', async () => {
@@ -175,25 +338,66 @@ translateBtn.addEventListener('click', async () => {
     const toLang = targetLang.value;
 
     if (!text) {
-        translationResult.innerHTML = '<p>Пожалуйста, введите текст для перевода</p>';
+        translationResult.innerHTML = '<p style="color: #ff6b6b;">Пожалуйста, введите текст для перевода</p>';
+        sourceText.style.animation = 'shake 0.5s ease-in-out';
+        setTimeout(() => sourceText.style.animation = '', 500);
         return;
     }
 
-    // Показываем загрузку
-    translationResult.innerHTML = '<p>Переводим...</p>';
+    // Анимация загрузки
+    translationResult.innerHTML = `
+        <div class="loading-animation">
+            <div class="spinner"></div>
+            <p>Переводим...</p>
+        </div>
+    `;
+
+    // Добавляем стили для спиннера
+    if (!document.querySelector('#spinner-style')) {
+        const spinnerStyle = document.createElement('style');
+        spinnerStyle.id = 'spinner-style';
+        spinnerStyle.textContent = `
+            .loading-animation {
+                text-align: center;
+            }
+            .spinner {
+                border: 3px solid #f3f3f3;
+                border-top: 3px solid #667eea;
+                border-radius: 50%;
+                width: 30px;
+                height: 30px;
+                animation: spin 1s linear infinite;
+                margin: 0 auto 10px;
+            }
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(spinnerStyle);
+    }
 
     try {
         const translatedText = await translateText(text, fromLang, toLang);
-        translationResult.innerHTML = `<p><strong>Перевод:</strong><br>${translatedText}</p>`;
+        translationResult.innerHTML = `
+            <div class="translation-success">
+                <span style="font-size: 24px; margin-bottom: 10px; display: block;">✅</span>
+                <p><strong>Перевод:</strong><br>${translatedText}</p>
+            </div>
+        `;
     } catch (error) {
         console.error('Ошибка перевода:', error);
-        translationResult.innerHTML = '<p>Ошибка перевода. Попробуйте еще раз.</p>';
+        translationResult.innerHTML = `
+            <div class="translation-error">
+                <span style="font-size: 24px; margin-bottom: 10px; display: block;">❌</span>
+                <p>Ошибка перевода. Попробуйте еще раз.</p>
+            </div>
+        `;
     }
 });
 
-// Улучшенная функция для перевода текста
+// Функция перевода (остается без изменений)
 async function translateText(text, sourceLang, targetLang) {
-    // Используем LibreTranslate - бесплатный и открытый API
     const apiUrl = 'https://libretranslate.de/translate';
     
     try {
@@ -219,12 +423,10 @@ async function translateText(text, sourceLang, targetLang) {
         
     } catch (error) {
         console.log('Пробуем запасной вариант перевода...');
-        // Запасной вариант через MyMemory API
         return await fallbackTranslate(text, sourceLang, targetLang);
     }
 }
 
-// Запасной вариант перевода
 async function fallbackTranslate(text, sourceLang, targetLang) {
     const apiUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${sourceLang}|${targetLang}`;
     
@@ -238,12 +440,10 @@ async function fallbackTranslate(text, sourceLang, targetLang) {
             throw new Error('Translation failed');
         }
     } catch (error) {
-        // Если все API не работают, показываем демо-перевод
         return getDemoTranslation(text, sourceLang, targetLang);
     }
 }
 
-// Демо-переводы для тестирования
 function getDemoTranslation(text, sourceLang, targetLang) {
     const demoTranslations = {
         'привет': {
@@ -293,7 +493,6 @@ exampleInput.addEventListener('keypress', (e) => {
     }
 });
 
-// Enter в поле ввода переводчика (Ctrl+Enter для перевода)
 sourceText.addEventListener('keypress', (e) => {
     if (e.key === 'Enter' && e.ctrlKey) {
         translateBtn.click();
@@ -303,7 +502,14 @@ sourceText.addEventListener('keypress', (e) => {
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Приложение загружено!');
-    // Можно добавить загрузку сохраненных слов при необходимости
+    initConfetti();
+    
     const savedWords = JSON.parse(localStorage.getItem('userWords') || '[]');
     console.log('Сохраненные слова:', savedWords);
+    
+    // Автофокус на первом поле
+    nameInput.focus();
 });
+
+// Обработка изменения размера окна
+window.addEventListener('resize', initConfetti);
