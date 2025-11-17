@@ -7,12 +7,19 @@
     <title>Приветствие</title>
 </head>
 <body>
+    <!-- Анимированный фон -->
+    <div class="animated-bg"></div>
+    
     <!-- Первый экран -->
     <div id="screen1" class="screen active">
         <div class="container">
+            <div class="logo">📚 WordMaster</div>
             <h1>Привет, как вас зовут?</h1>
             <input type="text" id="nameInput" placeholder="Ваше имя">
-            <button id="continueBtn1">продолжить</button>
+            <button id="continueBtn1" class="btn-primary">
+                <span>продолжить</span>
+                <div class="btn-shine"></div>
+            </button>
         </div>
     </div>
 
@@ -20,8 +27,10 @@
     <div id="screen2" class="screen">
         <div class="container">
             <h1>О приложении</h1>
-            <p id="greetingText">Привет, <span id="userNameSpan"></span>!<br>Это приложение<br>запоминания новых слов.<br>ты готов?</p>
-            <button id="readyBtn">я готов!!!</button>
+            <div class="feature-card">
+                <p id="greetingText">Привет, <span id="userNameSpan"></span>!<br>Это приложение<br>запоминания новых слов.<br>ты готов?</p>
+            </div>
+            <button id="readyBtn" class="btn-primary">я готов!!!</button>
             <button id="backToFirstBtn" class="back-btn">вернуться назад</button>
         </div>
     </div>
@@ -30,10 +39,21 @@
     <div id="screen3" class="screen">
         <div class="container">
             <h1>Выберите режим</h1>
-            <p>Привет, <span id="userNameSpan3"></span>!</p>
-            <button id="newWordBtn">Новое слово</button>
-            <button id="studyWordsBtn">Изучение слова</button>
-            <button id="translatorBtn" class="menu-btn">Переводчик</button>
+            <p class="welcome-text">Привет, <span id="userNameSpan3"></span>!</p>
+            <div class="menu-grid">
+                <button id="newWordBtn" class="menu-btn card-hover">
+                    <span class="btn-icon">✨</span>
+                    Новое слово
+                </button>
+                <button id="studyWordsBtn" class="menu-btn card-hover">
+                    <span class="btn-icon">📖</span>
+                    Изучение слов
+                </button>
+                <button id="translatorBtn" class="menu-btn card-hover">
+                    <span class="btn-icon">🌐</span>
+                    Переводчик
+                </button>
+            </div>
             <button id="backToSecondBtn" class="back-btn">вернуться назад</button>
         </div>
     </div>
@@ -67,10 +87,15 @@
                 
                 <textarea id="sourceText" placeholder="Введите текст для перевода..." class="translation-input"></textarea>
                 
-                <button id="translateBtn" class="translate-btn">Перевести</button>
+                <button id="translateBtn" class="translate-btn btn-primary">
+                    <span>Перевести</span>
+                </button>
                 
                 <div id="translationResult" class="translation-result">
-                    <p>Результат перевода появится здесь...</p>
+                    <div class="result-placeholder">
+                        <span class="placeholder-icon">📝</span>
+                        <p>Результат перевода появится здесь...</p>
+                    </div>
                 </div>
             </div>
             <button id="backToThirdBtn" class="back-btn">вернуться назад</button>
@@ -80,9 +105,12 @@
     <!-- пятый экран - новое слово -->
     <div id="screen5" class="screen">
         <div class="container">
-            <h1>Напишите своё новое слово<h1>
-            <input type="text" id="englishWordInput" placeholder="ваше слово">
-            <button id="continueBtn5">продолжить</button>
+            <h1>Напишите своё новое слово</h1>
+            <div class="input-group">
+                <input type="text" id="englishWordInput" placeholder="ваше слово">
+                <div class="input-focus"></div>
+            </div>
+            <button id="continueBtn5" class="btn-primary">продолжить</button>
             <button id="backToThirdFrom5" class="back-btn">вернуться назад</button>
         </div>
     </div>
@@ -90,10 +118,15 @@
     <!-- шестой экран - перевод -->
     <div id="screen6" class="screen">
         <div class="container">
-            <h1>Напишите перевод<h1>
-            <p>Слово: <span id="currentEnglishWord"></span></p>
-            <input type="text" id="russianWordInput" placeholder="ваш перевод">
-            <button id="toExampleBtn">продолжить</button>
+            <h1>Напишите перевод</h1>
+            <div class="word-preview">
+                <p>Слово: <span id="currentEnglishWord" class="highlight"></span></p>
+            </div>
+            <div class="input-group">
+                <input type="text" id="russianWordInput" placeholder="ваш перевод">
+                <div class="input-focus"></div>
+            </div>
+            <button id="toExampleBtn" class="btn-primary">продолжить</button>
             <button id="backToFifthBtn" class="back-btn">вернуться назад</button>
         </div>
     </div>
@@ -101,13 +134,22 @@
     <!-- седьмой экран - пример -->
     <div id="screen7" class="screen">
         <div class="container">
-            <h1>Напишите свой пример<h1>
-            <p>Слово: <span id="currentWordDisplay"></span> - <span id="currentTranslationDisplay"></span></p>
-            <input type="text" id="exampleInput" placeholder="ваш пример"> 
-            <button id="saveWordBtn">сохранить слово</button>
+            <h1>Напишите свой пример</h1>
+            <div class="word-info">
+                <p>Слово: <span id="currentWordDisplay" class="highlight"></span> - 
+                   <span id="currentTranslationDisplay" class="highlight"></span></p>
+            </div>
+            <div class="input-group">
+                <input type="text" id="exampleInput" placeholder="ваш пример"> 
+                <div class="input-focus"></div>
+            </div>
+            <button id="saveWordBtn" class="btn-success">сохранить слово</button>
             <button id="backToSixthBtn" class="back-btn">вернуться назад</button>
         </div>
     </div>
+
+    <!-- Конфетти эффект -->
+    <canvas id="confettiCanvas"></canvas>
 
     <script src="script.js"></script>
 </body>
