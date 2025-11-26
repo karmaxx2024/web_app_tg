@@ -401,7 +401,7 @@ translateBtn.addEventListener('click', async () => {
     }
 });
 
-// Функция перевода (остается без изменений)
+// Функция перевода
 async function translateText(text, sourceLang, targetLang) {
     const apiUrl = 'https://libretranslate.de/translate';
     
