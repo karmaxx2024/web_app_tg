@@ -237,9 +237,9 @@ p {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
     color: #ffffff;
     margin-top: 10px;
-    border-radius: 20px; /* ← ДОБАВЬ ЭТУ СТРОЧКУ */
-    
+    border-radius: 20px;
 }
+
 .back-btn:hover {
     background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%) !important;
     box-shadow: 
