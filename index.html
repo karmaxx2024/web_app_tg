@@ -9,7 +9,7 @@
 <body>
     <!-- Анимированный фон -->
     <div class="animated-bg"></div>
-    
+
     <!-- Первый экран -->
     <div id="screen1" class="screen active">
         <div class="container">
@@ -84,13 +84,13 @@
                         <option value="ja">Японский</option>
                     </select>
                 </div>
-                
+
                 <textarea id="sourceText" placeholder="Введите текст для перевода..." class="translation-input"></textarea>
-                
+
                 <button id="translateBtn" class="translate-btn btn-primary">
                     <span>Перевести</span>
                 </button>
-                
+
                 <div id="translationResult" class="translation-result">
                     <div class="result-placeholder">
                         <span class="placeholder-icon">📝</span>
@@ -136,11 +136,11 @@
         <div class="container">
             <h1>Напишите свой пример</h1>
             <div class="word-info">
-                <p>Слово: <span id="currentWordDisplay" class="highlight"></span> - 
+                <p>Слово: <span id="currentWordDisplay" class="highlight"></span> -
                    <span id="currentTranslationDisplay" class="highlight"></span></p>
             </div>
             <div class="input-group">
-                <input type="text" id="exampleInput" placeholder="ваш пример"> 
+                <input type="text" id="exampleInput" placeholder="ваш пример">
                 <div class="input-focus"></div>
             </div>
             <button id="saveWordBtn" class="btn-success">сохранить слово</button>
@@ -150,6 +150,36 @@
 
     <!-- Конфетти эффект -->
     <canvas id="confettiCanvas"></canvas>
+
+<!-- восьмой экран - изученные слова -->
+<div id="screen8" class="screen">
+    <div class="container">
+        <div class="studied-words-header">
+            <button id="backToThirdFrom8" class="back-btn oval-back-btn">←</button>
+            <h1>Изученные слова</h1>
+        </div>
+        
+        <!-- Поиск слов -->
+        <div class="search-container">
+            <div class="input-group">
+                <input type="text" id="wordSearch" placeholder="🔍 Поиск слов...">
+                <div class="input-focus"></div>
+            </div>
+        </div>
+        
+        <!-- Список слов -->
+        <div id="wordsList" class="words-list">
+            <!-- Слова будут добавляться динамически -->
+        </div>
+        
+        <!-- Состояние пустого списка -->
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <span class="empty-icon">📚</span>
+            <p>У вас пока нет изученных слов</p>
+            <button id="addFirstWord" class="btn-primary">Добавить первое слово</button>
+        </div>
+    </div>
+</div>
 
     <script src="script.js"></script>
 </body>
