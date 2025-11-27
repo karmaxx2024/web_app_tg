@@ -7,6 +7,7 @@ const screen5 = document.getElementById('screen5');
 const screen6 = document.getElementById('screen6');
 const screen7 = document.getElementById('screen7');
 const screen8 = document.getElementById('screen8');
+const screen9 = document.getElementById('screen9');
 
 const nameInput = document.getElementById('nameInput');
 const continueBtn1 = document.getElementById('continueBtn1');
@@ -19,10 +20,12 @@ const backToThirdFrom5 = document.getElementById('backToThirdFrom5');
 const backToFifthBtn = document.getElementById('backToFifthBtn');
 const backToSixthBtn = document.getElementById('backToSixthBtn');
 const backToThirdFrom8 = document.getElementById('backToThirdFrom8');
+const backToThirdFrom9 = document.getElementById('backToThirdFrom9');
 
 const newWordBtn = document.getElementById('newWordBtn');
 const studyWordsBtn = document.getElementById('studyWordsBtn');
 const translatorBtn = document.getElementById('translatorBtn');
+const gameBtn = document.getElementById('gameBtn');
 const userNameSpan = document.getElementById('userNameSpan');
 const userNameSpan3 = document.getElementById('userNameSpan3');
 
@@ -50,12 +53,38 @@ const wordsList = document.getElementById('wordsList');
 const emptyState = document.getElementById('emptyState');
 const addFirstWord = document.getElementById('addFirstWord');
 
+// Элементы игры
+const currentQuestionNumber = document.getElementById('currentQuestionNumber');
+const currentScore = document.getElementById('currentScore');
+const questionText = document.getElementById('questionText');
+const timerElement = document.getElementById('timer');
+const optionsContainer = document.getElementById('optionsContainer');
+const inputAnswerContainer = document.getElementById('inputAnswerContainer');
+const inputAnswer = document.getElementById('inputAnswer');
+const submitAnswer = document.getElementById('submitAnswer');
+const resultElement = document.getElementById('result');
+const nextQuestionBtn = document.getElementById('nextQuestion');
+const restartGameBtn = document.getElementById('restartGame');
+
 // Конфетти
 const confettiCanvas = document.getElementById('confettiCanvas');
 
 let userName = '';
 let currentEnglishWordValue = '';
 let currentRussianWordValue = '';
+
+// Переменные игры
+let gameState = {
+    currentQuestion: {},
+    timer: null,
+    timeLeft: 0,
+    score: 0,
+    questionsAnswered: 0,
+    totalQuestions: 5,
+    isGameActive: false
+};
+
+// ==================== ОСНОВНАЯ ЛОГИКА ПРИЛОЖЕНИЯ ====================
 
 // Инициализация конфетти
 function initConfetti() {
@@ -208,6 +237,11 @@ translatorBtn.addEventListener('click', () => {
     showScreen(screen4);
 });
 
+gameBtn.addEventListener('click', () => {
+    startGame();
+    showScreen(screen9);
+});
+
 // Обработчики для экранов 5-6-7
 continueBtn5.addEventListener('click', () => {
     currentEnglishWordValue = englishWordInput.value.trim();
@@ -323,6 +357,8 @@ function saveWordToStorage(wordData) {
     localStorage.setItem('userWords', JSON.stringify(words));
     console.log('Слово сохранено:', wordData);
 }
+
+// ==================== ЛОГИКА ПЕРЕВОДЧИКА ====================
 
 // Логика переводчика
 swapLangs.addEventListener('click', () => {
@@ -473,36 +509,7 @@ function getDemoTranslation(text, sourceLang, targetLang) {
     return `[Демо] Перевод "${text}" с ${sourceLang} на ${targetLang}`;
 }
 
-// Обработчики клавиши Enter
-nameInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        continueBtn1.click();
-    }
-});
-
-englishWordInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        continueBtn5.click();
-    }
-});
-
-russianWordInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        toExampleBtn.click();
-    }
-});
-
-exampleInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        saveWordBtn.click();
-    }
-});
-
-sourceText.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter' && e.ctrlKey) {
-        translateBtn.click();
-    }
-});
+// ==================== ЛОГИКА ИЗУЧЕННЫХ СЛОВ ====================
 
 // Обработчик для кнопки назад из изученных слов
 backToThirdFrom8.addEventListener('click', () => {
@@ -607,6 +614,380 @@ wordSearch.addEventListener('input', function() {
 wordSearch.addEventListener('keypress', function(e) {
     if (e.key === 'Enter') {
         this.blur(); // Убираем фокус при нажатии Enter
+    }
+});
+
+// ==================== ЛОГИКА ИГРЫ ====================
+
+// Обработчики элементов игры
+submitAnswer.addEventListener('click', checkInputAnswer);
+nextQuestionBtn.addEventListener('click', getNextQuestion);
+restartGameBtn.addEventListener('click', startGame);
+
+// Обработчик возврата из игры
+backToThirdFrom9.addEventListener('click', () => {
+    stopGame();
+    showScreen(screen3);
+});
+
+// Обработчик Enter в поле ввода игры
+inputAnswer.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        checkInputAnswer();
+    }
+});
+
+function startGame() {
+    gameState = {
+        currentQuestion: {},
+        timer: null,
+        timeLeft: 0,
+        score: 0,
+        questionsAnswered: 0,
+        totalQuestions: 5,
+        isGameActive: true
+    };
+    
+    updateGameStats();
+    resetGameUI();
+    getNextQuestion();
+}
+
+function stopGame() {
+    if (gameState.timer) {
+        clearInterval(gameState.timer);
+    }
+    gameState.isGameActive = false;
+}
+
+function updateGameStats() {
+    currentQuestionNumber.textContent = `${gameState.questionsAnswered + 1}/${gameState.totalQuestions}`;
+    currentScore.textContent = gameState.score;
+}
+
+function resetGameUI() {
+    // Сбрасываем UI
+    optionsContainer.style.display = 'block';
+    inputAnswerContainer.style.display = 'none';
+    nextQuestionBtn.style.display = 'none';
+    restartGameBtn.style.display = 'none';
+    resultElement.textContent = '';
+    resultElement.className = 'result';
+    timerElement.style.display = 'block';
+    timerElement.classList.remove('shake');
+    
+    // Очищаем варианты ответов
+    optionsContainer.innerHTML = '';
+    
+    // Сбрасываем поле ввода
+    inputAnswer.value = '';
+}
+
+async function getNextQuestion() {
+    if (!gameState.isGameActive) return;
+    
+    resetGameUI();
+    gameState.questionsAnswered++;
+    updateGameStats();
+    
+    try {
+        // Получаем вопрос из изученных слов или используем демо-вопросы
+        const question = await getQuestionFromLearnedWords();
+        gameState.currentQuestion = question;
+        
+        if (question.type === 'multiple_choice') {
+            showMultipleChoiceQuestion();
+        } else {
+            showInputQuestion();
+        }
+        
+        startTimer();
+    } catch (error) {
+        console.error('Error getting question:', error);
+        // Используем демо-вопрос при ошибке
+        getDemoQuestion();
+    }
+}
+
+function getQuestionFromLearnedWords() {
+    return new Promise((resolve) => {
+        const savedWords = JSON.parse(localStorage.getItem('userWords') || '[]');
+        
+        if (savedWords.length === 0) {
+            // Если нет изученных слов, используем демо-вопрос
+            resolve(getDemoQuestion());
+            return;
+        }
+        
+        // Выбираем случайное слово из изученных
+        const randomWord = savedWords[Math.floor(Math.random() * savedWords.length)];
+        
+        // Случайно выбираем тип вопроса
+        const questionType = Math.random() > 0.5 ? 'multiple_choice' : 'input';
+        
+        if (questionType === 'multiple_choice') {
+            // Создаем варианты ответов
+            const wrongOptions = getWrongOptions(savedWords, randomWord.russian);
+            const options = [...wrongOptions, randomWord.russian].sort(() => Math.random() - 0.5);
+            
+            resolve({
+                type: 'multiple_choice',
+                question: `Какой перевод имеет слово "${randomWord.english}"?`,
+                correct_answer: randomWord.russian,
+                options: options
+            });
+        } else {
+            resolve({
+                type: 'input',
+                question: `Напишите перевод слова "${randomWord.english}"`,
+                correct_answer: randomWord.russian
+            });
+        }
+    });
+}
+
+function getWrongOptions(words, correctAnswer) {
+    const wrongOptions = [];
+    const usedIndices = new Set();
+    
+    while (wrongOptions.length < 3 && usedIndices.size < words.length) {
+        const randomIndex = Math.floor(Math.random() * words.length);
+        if (!usedIndices.has(randomIndex)) {
+            usedIndices.add(randomIndex);
+            const word = words[randomIndex];
+            if (word.russian !== correctAnswer && !wrongOptions.includes(word.russian)) {
+                wrongOptions.push(word.russian);
+            }
+        }
+    }
+    
+    // Если недостаточно неправильных вариантов, добавляем базовые
+    const basicWrong = ['дом', 'машина', 'дерево', 'солнце', 'вода'];
+    while (wrongOptions.length < 3) {
+        const randomWrong = basicWrong[Math.floor(Math.random() * basicWrong.length)];
+        if (!wrongOptions.includes(randomWrong) && randomWrong !== correctAnswer) {
+            wrongOptions.push(randomWrong);
+        }
+    }
+    
+    return wrongOptions.slice(0, 3);
+}
+
+function getDemoQuestion() {
+    const demoQuestions = [
+        {
+            type: 'multiple_choice',
+            question: 'Какой перевод имеет слово "cat"?',
+            correct_answer: 'кошка',
+            options: ['кошка', 'собака', 'шар', 'дом']
+        },
+        {
+            type: 'multiple_choice',
+            question: 'Какой перевод имеет слова "book"?',
+            correct_answer: 'книга',
+            options: ['ручка', 'книга', 'стол', 'окно']
+        },
+        {
+            type: 'input',
+            question: 'Напишите перевод слова "dog"',
+            correct_answer: 'собака'
+        },
+        {
+            type: 'input',
+            question: 'Напишите перевод слова "house"',
+            correct_answer: 'дом'
+        }
+    ];
+    
+    return demoQuestions[Math.floor(Math.random() * demoQuestions.length)];
+}
+
+function showMultipleChoiceQuestion() {
+    questionText.textContent = gameState.currentQuestion.question;
+    
+    gameState.currentQuestion.options.forEach((option, index) => {
+        const button = document.createElement('button');
+        button.className = 'option-btn';
+        button.textContent = `${String.fromCharCode(65 + index)}) ${option}`;
+        button.addEventListener('click', () => checkAnswer(option));
+        optionsContainer.appendChild(button);
+    });
+}
+
+function showInputQuestion() {
+    questionText.textContent = gameState.currentQuestion.question;
+    optionsContainer.style.display = 'none';
+    inputAnswerContainer.style.display = 'block';
+    inputAnswer.value = '';
+    inputAnswer.focus();
+}
+
+function startTimer() {
+    gameState.timeLeft = 5;
+    timerElement.textContent = `⏰ Время: ${gameState.timeLeft}с`;
+    timerElement.style.color = '#dc3545';
+    
+    gameState.timer = setInterval(() => {
+        gameState.timeLeft--;
+        timerElement.textContent = `⏰ Время: ${gameState.timeLeft}с`;
+        
+        if (gameState.timeLeft <= 3) {
+            timerElement.style.color = '#ff6b6b';
+            timerElement.classList.add('shake');
+        }
+        
+        if (gameState.timeLeft <= 0) {
+            clearInterval(gameState.timer);
+            handleTimeOut();
+        }
+    }, 1000);
+}
+
+function checkAnswer(selectedAnswer) {
+    if (!gameState.isGameActive) return;
+    
+    clearInterval(gameState.timer);
+    timerElement.classList.remove('shake');
+    
+    const isCorrect = selectedAnswer === gameState.currentQuestion.correct_answer;
+    const optionButtons = optionsContainer.querySelectorAll('.option-btn');
+    
+    // Показываем правильные/неправильные ответы
+    optionButtons.forEach(button => {
+        const buttonText = button.textContent.slice(3); // Убираем букву варианта
+        button.disabled = true;
+        
+        if (buttonText === gameState.currentQuestion.correct_answer) {
+            button.classList.add('correct');
+        } else if (buttonText === selectedAnswer && !isCorrect) {
+            button.classList.add('incorrect');
+        }
+    });
+    
+    showResult(isCorrect);
+}
+
+function checkInputAnswer() {
+    if (!gameState.isGameActive) return;
+    
+    clearInterval(gameState.timer);
+    timerElement.classList.remove('shake');
+    
+    const userAnswer = inputAnswer.value.trim().toLowerCase();
+    const correctAnswer = gameState.currentQuestion.correct_answer.toLowerCase();
+    const isCorrect = userAnswer === correctAnswer;
+    
+    showResult(isCorrect);
+}
+
+function handleTimeOut() {
+    timerElement.classList.remove('shake');
+    
+    if (gameState.currentQuestion.type === 'multiple_choice') {
+        const optionButtons = optionsContainer.querySelectorAll('.option-btn');
+        optionButtons.forEach(button => {
+            const buttonText = button.textContent.slice(3);
+            button.disabled = true;
+            if (buttonText === gameState.currentQuestion.correct_answer) {
+                button.classList.add('correct');
+            }
+        });
+    }
+    
+    showResult(false, true);
+}
+
+function showResult(isCorrect, isTimeout = false) {
+    if (isTimeout) {
+        resultElement.textContent = `⏰ Время вышло! Правильный ответ: ${gameState.currentQuestion.correct_answer}`;
+        resultElement.className = 'result timeout';
+    } else if (isCorrect) {
+        gameState.score++;
+        currentScore.textContent = gameState.score;
+        resultElement.textContent = '✅ Правильно! Отличная работа!';
+        resultElement.className = 'result correct';
+        launchConfetti();
+    } else {
+        resultElement.textContent = `❌ Неправильно! Правильный ответ: ${gameState.currentQuestion.correct_answer}`;
+        resultElement.className = 'result incorrect';
+    }
+    
+    showNextButton();
+}
+
+function showNextButton() {
+    if (gameState.questionsAnswered < gameState.totalQuestions) {
+        nextQuestionBtn.style.display = 'block';
+        nextQuestionBtn.textContent = 'Следующий вопрос';
+    } else {
+        showGameResults();
+    }
+}
+
+function showGameResults() {
+    questionText.textContent = 'Игра завершена!';
+    timerElement.style.display = 'none';
+    optionsContainer.style.display = 'none';
+    inputAnswerContainer.style.display = 'none';
+    nextQuestionBtn.style.display = 'none';
+    
+    const percentage = (gameState.score / gameState.totalQuestions) * 100;
+    let message = '';
+    
+    if (percentage >= 80) {
+        message = '🎉 Отличный результат! Вы настоящий эксперт!';
+    } else if (percentage >= 60) {
+        message = '👍 Хорошая работа! Продолжайте в том же духе!';
+    } else {
+        message = '💪 Не сдавайтесь! Практика ведет к совершенству!';
+    }
+    
+    resultElement.innerHTML = `
+        <div style="text-align: center;">
+            <h3>Ваш результат: ${gameState.score} из ${gameState.totalQuestions}</h3>
+            <p>${message}</p>
+        </div>
+    `;
+    resultElement.className = 'result';
+    
+    restartGameBtn.style.display = 'block';
+    
+    // Запускаем конфетти для хороших результатов
+    if (percentage >= 60) {
+        launchConfetti();
+    }
+}
+
+// ==================== ОБЩИЕ ОБРАБОТЧИКИ ====================
+
+// Обработчики клавиши Enter
+nameInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        continueBtn1.click();
+    }
+});
+
+englishWordInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        continueBtn5.click();
+    }
+});
+
+russianWordInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        toExampleBtn.click();
+    }
+});
+
+exampleInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        saveWordBtn.click();
+    }
+});
+
+sourceText.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter' && e.ctrlKey) {
+        translateBtn.click();
     }
 });
 
