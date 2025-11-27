@@ -53,6 +53,10 @@
                     <span class="btn-icon">🌐</span>
                     Переводчик
                 </button>
+                <button id="gameBtn" class="menu-btn card-hover">
+                    <span class="btn-icon">🎮</span>
+                    Проверь свои знания
+                </button>
             </div>
             <button id="backToSecondBtn" class="back-btn">вернуться назад</button>
         </div>
@@ -148,38 +152,80 @@
         </div>
     </div>
 
-    <!-- Конфетти эффект -->
-    <canvas id="confettiCanvas"></canvas>
-
-<!-- восьмой экран - изученные слова -->
-<div id="screen8" class="screen">
-    <div class="container">
-        <div class="studied-words-header">
-            <button id="backToThirdFrom8" class="back-btn oval-back-btn">←</button>
-            <h1>Изученные слова</h1>
-        </div>
-        
-        <!-- Поиск слов -->
-        <div class="search-container">
-            <div class="input-group">
-                <input type="text" id="wordSearch" placeholder="🔍 Поиск слов...">
-                <div class="input-focus"></div>
+    <!-- восьмой экран - изученные слова -->
+    <div id="screen8" class="screen">
+        <div class="container">
+            <div class="studied-words-header">
+                <button id="backToThirdFrom8" class="back-btn oval-back-btn">←</button>
+                <h1>Изученные слова</h1>
+            </div>
+            
+            <!-- Поиск слов -->
+            <div class="search-container">
+                <div class="input-group">
+                    <input type="text" id="wordSearch" placeholder="🔍 Поиск слов...">
+                    <div class="input-focus"></div>
+                </div>
+            </div>
+            
+            <!-- Список слов -->
+            <div id="wordsList" class="words-list">
+                <!-- Слова будут добавляться динамически -->
+            </div>
+            
+            <!-- Состояние пустого списка -->
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <span class="empty-icon">📚</span>
+                <p>У вас пока нет изученных слов</p>
+                <button id="addFirstWord" class="btn-primary">Добавить первое слово</button>
             </div>
         </div>
-        
-        <!-- Список слов -->
-        <div id="wordsList" class="words-list">
-            <!-- Слова будут добавляться динамически -->
-        </div>
-        
-        <!-- Состояние пустого списка -->
-        <div id="emptyState" class="empty-state" style="display: none;">
-            <span class="empty-icon">📚</span>
-            <p>У вас пока нет изученных слов</p>
-            <button id="addFirstWord" class="btn-primary">Добавить первое слово</button>
+    </div>
+
+    <!-- Девятый экран - Игра -->
+    <div id="screen9" class="screen">
+        <div class="container">
+            <div class="studied-words-header">
+                <button id="backToThirdFrom9" class="back-btn oval-back-btn">←</button>
+                <h1>Проверь знания</h1>
+            </div>
+            
+            <div class="game-container">
+                <div class="game-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Вопрос:</span>
+                        <span id="currentQuestionNumber" class="stat-value">1/5</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Счет:</span>
+                        <span id="currentScore" class="stat-value">0</span>
+                    </div>
+                </div>
+                
+                <div class="question" id="questionText">Загрузка вопроса...</div>
+                <div class="timer" id="timer">⏰ Время: 5с</div>
+                
+                <div class="options-container" id="optionsContainer">
+                    <!-- Варианты ответов будут здесь -->
+                </div>
+                
+                <div class="input-answer-container" id="inputAnswerContainer" style="display: none;">
+                    <input type="text" class="input-answer" id="inputAnswer" placeholder="Введите ваш ответ...">
+                    <button id="submitAnswer" class="btn-primary">Ответить</button>
+                </div>
+                
+                <div class="result" id="result"></div>
+                
+                <div class="game-controls">
+                    <button id="nextQuestion" class="btn-primary" style="display: none;">Следующий вопрос</button>
+                    <button id="restartGame" class="btn-success" style="display: none;">Играть снова</button>
+                </div>
+            </div>
         </div>
     </div>
-</div>
+
+    <!-- Конфетти эффект -->
+    <canvas id="confettiCanvas"></canvas>
 
     <script src="script.js"></script>
 </body>
