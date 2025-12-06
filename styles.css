@@ -624,10 +624,46 @@ p {
     box-shadow: 0 8px 25px rgba(76, 175, 80, 0.2);
 }
 
+.word-item-header {
+    display:flex;
+    justify-content:space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    position: relative;
+}
+
+.word-item-header .word-pair {
+    flex:1;
+    margin-bottom: 0px;
+}
+
+.delete-word-btn {
+    display: flex;
+    background: red;
+    border: none;
+    border-radius: 15px;
+    width: 36px;
+    height: 26px;
+    padding: 0;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.delete-word-btn:hover {
+    background:rgb(193, 33, 71);
+    transform: scale(1.1);
+}
+
+.delete-word-btn:active {
+    transform: scale(0.7);
+}
+
 .word-pair {
     font-size: 18px;
     font-weight: 600;
-    margin-bottom: 10px;
+    margin-bottom: 0;
     color: #333;
 }
 
