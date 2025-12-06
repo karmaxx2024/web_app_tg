@@ -1,3 +1,6 @@
+// API конфигурация
+const API_BASE_URL = 'http://localhost:5000/api';
+
 // Получаем элементы
 const screen1 = document.getElementById('screen1');
 const screen2 = document.getElementById('screen2');
@@ -53,6 +56,13 @@ const wordsList = document.getElementById('wordsList');
 const emptyState = document.getElementById('emptyState');
 const addFirstWord = document.getElementById('addFirstWord');
 
+// Элементы для удаления слов
+const deleteAllPanel = document.getElementById('deleteAllPanel');
+const deleteAllBtn = document.getElementById('deleteAllBtn');
+const deleteConfirm = document.getElementById('deleteConfirm');
+const confirmDelete = document.getElementById('confirmDelete');
+const cancelDelete = document.getElementById('cancelDelete');
+
 // Элементы игры
 const currentQuestionNumber = document.getElementById('currentQuestionNumber');
 const currentScore = document.getElementById('currentScore');
@@ -83,6 +93,80 @@ let gameState = {
     totalQuestions: 5,
     isGameActive: false
 };
+
+// ==================== API ФУНКЦИИ ====================
+
+// Функция для загрузки слов с сервера
+async function loadWordsFromServer(searchTerm = '') {
+    try {
+        let url = `${API_BASE_URL}/words`;
+        if (searchTerm) {
+            url = `${API_BASE_URL}/search/${encodeURIComponent(searchTerm)}`;
+        }
+        
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (data.success) {
+            return data.words;
+        } else {
+            throw new Error(data.error || 'Ошибка загрузки слов');
+        }
+    } catch (error) {
+        console.error('Ошибка при загрузке слов:', error);
+        showAnimatedMessage('Ошибка загрузки слов', 'error');
+        return [];
+    }
+}
+
+// Функция для сохранения слова на сервер
+async function saveWordToServer(wordData) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/words`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(wordData)
+        });
+        
+        const data = await response.json();
+        return data.success;
+    } catch (error) {
+        console.error('Ошибка при сохранении слова:', error);
+        return false;
+    }
+}
+
+// Функция для удаления слова с сервера
+async function deleteWordFromServer(wordEnglish) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/words/${encodeURIComponent(wordEnglish)}`, {
+            method: 'DELETE'
+        });
+        
+        const data = await response.json();
+        return data.success;
+    } catch (error) {
+        console.error('Ошибка при удалении слова:', error);
+        return false;
+    }
+}
+
+// Функция для удаления всех слов с сервера
+async function deleteAllWordsFromServer() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/words`, {
+            method: 'DELETE'
+        });
+        
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Ошибка при удалении всех слов:', error);
+        return { success: false, error: error.message };
+    }
+}
 
 // ==================== ОСНОВНАЯ ЛОГИКА ПРИЛОЖЕНИЯ ====================
 
@@ -162,22 +246,6 @@ function showScreen(screenToShow) {
     }
 }
 
-// Добавляем CSS для анимации исчезновения
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes screenSlideOut {
-        from {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
-        to {
-            opacity: 0;
-            transform: translateY(-50px) scale(0.95);
-        }
-    }
-`;
-document.head.appendChild(style);
-
 // Обработчики событий для навигации
 continueBtn1.addEventListener('click', () => {
     userName = nameInput.value.trim();
@@ -185,23 +253,8 @@ continueBtn1.addEventListener('click', () => {
         userNameSpan.textContent = userName;
         showScreen(screen2);
     } else {
-        // Анимация shake для пустого поля
         nameInput.style.animation = 'shake 0.5s ease-in-out';
         setTimeout(() => nameInput.style.animation = '', 500);
-        
-        // Добавляем CSS для shake анимации
-        if (!document.querySelector('#shake-animation')) {
-            const shakeStyle = document.createElement('style');
-            shakeStyle.id = 'shake-animation';
-            shakeStyle.textContent = `
-                @keyframes shake {
-                    0%, 100% { transform: translateX(0); }
-                    25% { transform: translateX(-10px); }
-                    75% { transform: translateX(10px); }
-                }
-            `;
-            document.head.appendChild(shakeStyle);
-        }
     }
 });
 
@@ -228,8 +281,8 @@ newWordBtn.addEventListener('click', () => {
     englishWordInput.value = '';
 });
 
-studyWordsBtn.addEventListener('click', () => {
-    loadStudiedWords();
+studyWordsBtn.addEventListener('click', async () => {
+    await loadStudiedWords();
     showScreen(screen8);
 });
 
@@ -268,7 +321,7 @@ toExampleBtn.addEventListener('click', () => {
     }
 });
 
-saveWordBtn.addEventListener('click', () => {
+saveWordBtn.addEventListener('click', async () => {
     const example = exampleInput.value.trim();
     
     const wordData = {
@@ -278,17 +331,22 @@ saveWordBtn.addEventListener('click', () => {
         date: new Date().toLocaleDateString('ru-RU')
     };
     
-    saveWordToStorage(wordData);
+    // Сохраняем на сервере
+    const saved = await saveWordToServer(wordData);
     
-    // Запускаем конфетти при успешном сохранении
-    launchConfetti();
-    
-    // Показываем анимированное сообщение
-    showAnimatedMessage(`Слово "${currentEnglishWordValue}" успешно сохранено!`, 'success');
-    
-    setTimeout(() => {
-        showScreen(screen3);
-    }, 2000);
+    if (saved) {
+        // Запускаем конфетти при успешном сохранении
+        launchConfetti();
+        
+        // Показываем анимированное сообщение
+        showAnimatedMessage(`Слово "${currentEnglishWordValue}" успешно сохранено!`, 'success');
+        
+        setTimeout(() => {
+            showScreen(screen3);
+        }, 2000);
+    } else {
+        showAnimatedMessage('Ошибка сохранения слова', 'error');
+    }
 });
 
 // Функция для показа анимированных сообщений
@@ -299,7 +357,9 @@ function showAnimatedMessage(message, type) {
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        background: ${type === 'success' ? 'linear-gradient(135deg, #4CAF50, #45a049)' : 'linear-gradient(135deg, #ff6b6b, #ee5a52)'};
+        background: ${type === 'success' ? 'linear-gradient(135deg, #4CAF50, #45a049)' : 
+                     type === 'warning' ? 'linear-gradient(135deg, #ff9800, #f57c00)' :
+                     'linear-gradient(135deg, #ff6b6b, #ee5a52)'};
         color: white;
         padding: 20px 30px;
         border-radius: 15px;
@@ -317,26 +377,6 @@ function showAnimatedMessage(message, type) {
     }, 2000);
 }
 
-// Добавляем CSS для анимации сообщений
-const messageStyle = document.createElement('style');
-messageStyle.textContent = `
-    @keyframes messagePop {
-        0% {
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(0.5);
-        }
-        70% {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1.1);
-        }
-        100% {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1);
-        }
-    }
-`;
-document.head.appendChild(messageStyle);
-
 // Навигация назад между экранами 5-6-7
 backToThirdFrom5.addEventListener('click', () => {
     showScreen(screen3);
@@ -350,271 +390,233 @@ backToSixthBtn.addEventListener('click', () => {
     showScreen(screen6);
 });
 
-// Функция для сохранения слова в localStorage
-function saveWordToStorage(wordData) {
-    let words = JSON.parse(localStorage.getItem('userWords') || '[]');
-    words.push(wordData);
-    localStorage.setItem('userWords', JSON.stringify(words));
-    console.log('Слово сохранено:', wordData);
-}
-
-// ==================== ЛОГИКА ПЕРЕВОДЧИКА ====================
-
-// Логика переводчика
-swapLangs.addEventListener('click', () => {
-    const tempLang = sourceLang.value;
-    sourceLang.value = targetLang.value;
-    targetLang.value = tempLang;
-    
-    // Анимация для кнопки swap
-    swapLangs.style.transform = 'rotate(180deg) scale(1.1)';
-    setTimeout(() => {
-        swapLangs.style.transform = '';
-    }, 400);
+// Обработчик для кнопки "Добавить первое слово"
+addFirstWord.addEventListener('click', () => {
+    showScreen(screen5);
 });
 
-translateBtn.addEventListener('click', async () => {
-    const text = sourceText.value.trim();
-    const fromLang = sourceLang.value;
-    const toLang = targetLang.value;
-
-    if (!text) {
-        translationResult.innerHTML = '<p style="color: #ff6b6b;">Пожалуйста, введите текст для перевода</p>';
-        sourceText.style.animation = 'shake 0.5s ease-in-out';
-        setTimeout(() => sourceText.style.animation = '', 500);
-        return;
-    }
-
-    // Анимация загрузки
-    translationResult.innerHTML = `
-        <div class="loading-animation">
-            <div class="spinner"></div>
-            <p>Переводим...</p>
-        </div>
-    `;
-
-    // Добавляем стили для спиннера
-    if (!document.querySelector('#spinner-style')) {
-        const spinnerStyle = document.createElement('style');
-        spinnerStyle.id = 'spinner-style';
-        spinnerStyle.textContent = `
-            .loading-animation {
-                text-align: center;
-            }
-            .spinner {
-                border: 3px solid #f3f3f3;
-                border-top: 3px solid #667eea;
-                border-radius: 50%;
-                width: 30px;
-                height: 30px;
-                animation: spin 1s linear infinite;
-                margin: 0 auto 10px;
-            }
-            @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
-        `;
-        document.head.appendChild(spinnerStyle);
-    }
-
-    try {
-        const translatedText = await translateText(text, fromLang, toLang);
-        translationResult.innerHTML = `
-            <div class="translation-success">
-                <span style="font-size: 24px; margin-bottom: 10px; display: block;">✅</span>
-                <p><strong>Перевод:</strong><br>${translatedText}</p>
-            </div>
-        `;
-    } catch (error) {
-        console.error('Ошибка перевода:', error);
-        translationResult.innerHTML = `
-            <div class="translation-error">
-                <span style="font-size: 24px; margin-bottom: 10px; display: block;">❌</span>
-                <p>Ошибка перевода. Попробуйте еще раз.</p>
-            </div>
-        `;
-    }
-});
-
-// Функция перевода
-async function translateText(text, sourceLang, targetLang) {
-    const apiUrl = 'https://libretranslate.de/translate';
-    
-    try {
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                q: text,
-                source: sourceLang,
-                target: targetLang,
-                format: 'text'
-            })
-        });
-        
-        if (!response.ok) {
-            throw new Error('Ошибка сети');
-        }
-        
-        const data = await response.json();
-        return data.translatedText || text;
-        
-    } catch (error) {
-        console.log('Пробуем запасной вариант перевода...');
-        return await fallbackTranslate(text, sourceLang, targetLang);
-    }
-}
-
-async function fallbackTranslate(text, sourceLang, targetLang) {
-    const apiUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${sourceLang}|${targetLang}`;
-    
-    try {
-        const response = await fetch(apiUrl);
-        const data = await response.json();
-        
-        if (data.responseStatus === 200) {
-            return data.responseData.translatedText;
-        } else {
-            throw new Error('Translation failed');
-        }
-    } catch (error) {
-        return getDemoTranslation(text, sourceLang, targetLang);
-    }
-}
-
-function getDemoTranslation(text, sourceLang, targetLang) {
-    const demoTranslations = {
-        'привет': {
-            'en': 'hello', 'es': 'hola', 'fr': 'bonjour', 'de': 'hallo', 'zh': '你好', 'ja': 'こんにちは'
-        },
-        'спасибо': {
-            'en': 'thank you', 'es': 'gracias', 'fr': 'merci', 'de': 'danke', 'zh': '谢谢', 'ja': 'ありがとう'
-        },
-        'да': {
-            'en': 'yes', 'es': 'sí', 'fr': 'oui', 'de': 'ja', 'zh': '是', 'ja': 'はい'
-        },
-        'нет': {
-            'en': 'no', 'es': 'no', 'fr': 'non', 'de': 'nein', 'zh': '不', 'ja': 'いいえ'
-        }
-    };
-    
-    const lowerText = text.toLowerCase();
-    if (demoTranslations[lowerText] && demoTranslations[lowerText][targetLang]) {
-        return demoTranslations[lowerText][targetLang];
-    }
-    
-    return `[Демо] Перевод "${text}" с ${sourceLang} на ${targetLang}`;
-}
-
-// ==================== ЛОГИКА ИЗУЧЕННЫХ СЛОВ ====================
+// ==================== ЛОГИКА ИЗУЧЕННЫХ СЛОВ (С API) ====================
 
 // Обработчик для кнопки назад из изученных слов
 backToThirdFrom8.addEventListener('click', () => {
     showScreen(screen3);
 });
 
-// Обработчик для кнопки "Добавить первое слово"
-addFirstWord.addEventListener('click', () => {
-    showScreen(screen5);
-});
-
-// Функция загрузки изученных слов
-function loadStudiedWords(filter = '') {
-    const savedWords = JSON.parse(localStorage.getItem('userWords') || '[]');
-    
-    if (savedWords.length === 0) {
-        wordsList.style.display = 'none';
-        emptyState.style.display = 'block';
-        return;
-    }
-    
-    emptyState.style.display = 'none';
-    wordsList.style.display = 'block';
-    
-    // Очищаем список
-    wordsList.innerHTML = '';
-    
-    // Фильтруем слова если есть поисковый запрос
-    const filteredWords = savedWords.filter(word => 
-        word.english.toLowerCase().includes(filter.toLowerCase()) ||
-        word.russian.toLowerCase().includes(filter.toLowerCase())
-    );
-    
-    if (filteredWords.length === 0) {
-        wordsList.innerHTML = `
-            <div class="empty-state">
-                <span class="empty-icon">🔍</span>
-                <p>Слова по запросу "${filter}" не найдены</p>
-            </div>
-        `;
-        return;
-    }
-    
-    // Добавляем слова в список с анимацией
-    filteredWords.forEach((word, index) => {
-        const wordItem = document.createElement('div');
-        wordItem.className = 'word-item';
-        wordItem.style.animationDelay = `${index * 0.1}s`;
+// Функция загрузки изученных слов с сервера
+async function loadStudiedWords(searchTerm = '') {
+    try {
+        const words = await loadWordsFromServer(searchTerm);
         
-        // Подсветка совпадений при поиске
-        const highlightEnglish = filter ? 
-            word.english.replace(new RegExp(filter, 'gi'), match => 
-                `<span class="search-highlight">${match}</span>`) : 
-            word.english;
+        if (words.length === 0) {
+            wordsList.style.display = 'none';
+            emptyState.style.display = 'block';
+            deleteAllPanel.style.display = 'none';
+            return;
+        }
+        
+        emptyState.style.display = 'none';
+        wordsList.style.display = 'block';
+        deleteAllPanel.style.display = 'block';
+        
+        // Очищаем список
+        wordsList.innerHTML = '';
+        
+        // Добавляем слова в список с анимацией
+        words.forEach((word, index) => {
+            const wordItem = document.createElement('div');
+            wordItem.className = 'word-item';
+            wordItem.style.animationDelay = `${index * 0.1}s`;
+            wordItem.dataset.wordEnglish = word.english;
             
-        const highlightRussian = filter ? 
-            word.russian.replace(new RegExp(filter, 'gi'), match => 
-                `<span class="search-highlight">${match}</span>`) : 
-            word.russian;
-        
-        wordItem.innerHTML = `
-            <div class="word-pair">
-                <span class="word-english">${highlightEnglish}</span> - 
-                <span class="word-translation">${highlightRussian}</span>
-            </div>
-            <div class="word-example">
-                📝 ${word.example}
-            </div>
-            <div class="word-date">
-                Добавлено: ${word.date}
-            </div>
-        `;
-        
-        // Добавляем анимацию при клике на слово
-        wordItem.addEventListener('click', function() {
-            this.style.animation = 'none';
-            setTimeout(() => {
-                this.style.animation = 'wordItemAppear 0.3s ease-out';
-            }, 10);
+            // Подсветка совпадений при поиске
+            const highlightEnglish = searchTerm ? 
+                word.english.replace(new RegExp(searchTerm, 'gi'), match => 
+                    `<span class="search-highlight">${match}</span>`) : 
+                word.english;
+                
+            const highlightRussian = searchTerm ? 
+                word.russian.replace(new RegExp(searchTerm, 'gi'), match => 
+                    `<span class="search-highlight">${match}</span>`) : 
+                word.russian;
+            
+            wordItem.innerHTML = `
+                <button class="word-delete-btn" data-word="${word.english}">🗑️</button>
+                <div class="word-pair">
+                    <span class="word-english">${highlightEnglish}</span> - 
+                    <span class="word-translation">${highlightRussian}</span>
+                </div>
+                <div class="word-example">
+                    📝 ${word.example}
+                </div>
+                <div class="word-date">
+                    Добавлено: ${word.date}
+                </div>
+            `;
+            
+            // Добавляем анимацию при клике на слово
+            wordItem.addEventListener('click', function(e) {
+                if (!e.target.classList.contains('word-delete-btn')) {
+                    this.style.animation = 'none';
+                    setTimeout(() => {
+                        this.style.animation = 'wordItemAppear 0.3s ease-out';
+                    }, 10);
+                }
+            });
+            
+            wordsList.appendChild(wordItem);
         });
         
-        wordsList.appendChild(wordItem);
-    });
+        // Добавляем обработчики для кнопок удаления отдельных слов
+        setTimeout(() => {
+            document.querySelectorAll('.word-delete-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const wordToDelete = this.dataset.word;
+                    deleteSingleWord(wordToDelete, this.closest('.word-item'));
+                });
+            });
+        }, 100);
+        
+    } catch (error) {
+        console.error('Ошибка загрузки слов:', error);
+        wordsList.innerHTML = `
+            <div class="empty-state">
+                <span class="empty-icon">⚠️</span>
+                <p>Ошибка загрузки слов</p>
+                <button onclick="loadStudiedWords()" class="btn-primary">Попробовать снова</button>
+            </div>
+        `;
+        deleteAllPanel.style.display = 'none';
+    }
 }
+
+// Удаление отдельного слова
+async function deleteSingleWord(wordEnglish, wordElement) {
+    // Анимация подтверждения
+    const deleteBtn = wordElement.querySelector('.word-delete-btn');
+    deleteBtn.classList.add('confirm-pulse');
+    deleteBtn.textContent = '❓';
+    deleteBtn.style.background = 'rgba(255, 193, 7, 0.2)';
+    
+    // Восстанавливаем кнопку через 2 секунды если не подтверждено
+    const timeoutId = setTimeout(() => {
+        deleteBtn.classList.remove('confirm-pulse');
+        deleteBtn.textContent = '🗑️';
+        deleteBtn.style.background = '';
+    }, 2000);
+    
+    // При повторном клике подтверждаем удаление
+    const confirmDeleteHandler = async (e) => {
+        e.stopPropagation();
+        clearTimeout(timeoutId);
+        
+        // Анимация удаления
+        wordElement.classList.add('deleting');
+        
+        // Удаляем с сервера
+        const success = await deleteWordFromServer(wordEnglish);
+        
+        if (success) {
+            // Показываем уведомление
+            showDeleteNotification(`Слово "${wordEnglish}" удалено`);
+            
+            // Обновляем список после анимации
+            setTimeout(() => {
+                loadStudiedWords(wordSearch.value.trim());
+            }, 400);
+        } else {
+            // В случае ошибки возвращаем элемент
+            wordElement.classList.remove('deleting');
+            deleteBtn.classList.remove('confirm-pulse');
+            deleteBtn.textContent = '🗑️';
+            deleteBtn.style.background = '';
+            showAnimatedMessage('Ошибка удаления слова', 'error');
+        }
+    };
+    
+    // Заменяем обработчик
+    deleteBtn.replaceWith(deleteBtn.cloneNode(true));
+    const newDeleteBtn = wordElement.querySelector('.word-delete-btn');
+    newDeleteBtn.addEventListener('click', confirmDeleteHandler);
+}
+
+// Удаление всех слов
+async function deleteAllWords() {
+    // Показываем панель подтверждения
+    deleteConfirm.style.display = 'block';
+    deleteConfirm.classList.add('confirm-pulse');
+    
+    // Анимация для кнопки удаления всех
+    deleteAllBtn.style.background = 'linear-gradient(135deg, #ff5252 0%, #e53935 100%)';
+    deleteAllBtn.disabled = true;
+    
+    // Автоматическое скрытие подтверждения через 5 секунд
+    const cancelTimeout = setTimeout(() => {
+        cancelDelete.click();
+    }, 5000);
+    
+    // Обработчик подтверждения удаления
+    const confirmHandler = async () => {
+        clearTimeout(cancelTimeout);
+        
+        // Удаляем все слова с сервера
+        const result = await deleteAllWordsFromServer();
+        
+        if (result.success) {
+            // Показываем уведомление
+            showDeleteNotification(`Удалено ${result.deleted_count || 'всех'} слов`);
+            
+            // Обновляем интерфейс
+            setTimeout(() => {
+                loadStudiedWords();
+                deleteConfirm.style.display = 'none';
+                deleteAllBtn.style.background = '';
+                deleteAllBtn.disabled = false;
+                deleteConfirm.classList.remove('confirm-pulse');
+            }, 300);
+        } else {
+            // В случае ошибки
+            deleteConfirm.style.display = 'none';
+            deleteAllBtn.style.background = '';
+            deleteAllBtn.disabled = false;
+            deleteConfirm.classList.remove('confirm-pulse');
+            showAnimatedMessage(`Ошибка удаления: ${result.error}`, 'error');
+        }
+    };
+    
+    // Обработчик отмены
+    const cancelHandler = () => {
+        clearTimeout(cancelTimeout);
+        deleteConfirm.style.display = 'none';
+        deleteAllBtn.style.background = '';
+        deleteAllBtn.disabled = false;
+        deleteConfirm.classList.remove('confirm-pulse');
+    };
+    
+    // Обновляем обработчики
+    confirmDelete.onclick = confirmHandler;
+    cancelDelete.onclick = cancelHandler;
+}
+
+// Функция показа уведомления об удалении
+function showDeleteNotification(message) {
+    const notification = document.createElement('div');
+    notification.className = 'delete-notification';
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// Обработчики для кнопок удаления
+deleteAllBtn.addEventListener('click', deleteAllWords);
 
 // Обработчик поиска
 wordSearch.addEventListener('input', function() {
     const searchTerm = this.value.trim();
     loadStudiedWords(searchTerm);
-    
-    // Анимация для иконки поиска
-    const searchIcon = this.parentNode.querySelector('.search-icon');
-    if (searchTerm) {
-        searchIcon.style.animation = 'bounce 0.5s ease-in-out';
-        setTimeout(() => {
-            searchIcon.style.animation = '';
-        }, 500);
-    }
-});
-
-// Обработчик Enter в поиске
-wordSearch.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-        this.blur(); // Убираем фокус при нажатии Enter
-    }
 });
 
 // ==================== ЛОГИКА ИГРЫ ====================
@@ -637,7 +639,7 @@ inputAnswer.addEventListener('keypress', (e) => {
     }
 });
 
-function startGame() {
+async function startGame() {
     gameState = {
         currentQuestion: {},
         timer: null,
@@ -650,7 +652,7 @@ function startGame() {
     
     updateGameStats();
     resetGameUI();
-    getNextQuestion();
+    await getNextQuestion();
 }
 
 function stopGame() {
@@ -666,7 +668,6 @@ function updateGameStats() {
 }
 
 function resetGameUI() {
-    // Сбрасываем UI
     optionsContainer.style.display = 'block';
     inputAnswerContainer.style.display = 'none';
     nextQuestionBtn.style.display = 'none';
@@ -675,11 +676,7 @@ function resetGameUI() {
     resultElement.className = 'result';
     timerElement.style.display = 'block';
     timerElement.classList.remove('shake');
-    
-    // Очищаем варианты ответов
     optionsContainer.innerHTML = '';
-    
-    // Сбрасываем поле ввода
     inputAnswer.value = '';
 }
 
@@ -691,7 +688,6 @@ async function getNextQuestion() {
     updateGameStats();
     
     try {
-        // Получаем вопрос из изученных слов или используем демо-вопросы
         const question = await getQuestionFromLearnedWords();
         gameState.currentQuestion = question;
         
@@ -704,46 +700,37 @@ async function getNextQuestion() {
         startTimer();
     } catch (error) {
         console.error('Error getting question:', error);
-        // Используем демо-вопрос при ошибке
         getDemoQuestion();
     }
 }
 
-function getQuestionFromLearnedWords() {
-    return new Promise((resolve) => {
-        const savedWords = JSON.parse(localStorage.getItem('userWords') || '[]');
+async function getQuestionFromLearnedWords() {
+    const words = await loadWordsFromServer();
+    
+    if (words.length === 0) {
+        return getDemoQuestion();
+    }
+    
+    const randomWord = words[Math.floor(Math.random() * words.length)];
+    const questionType = Math.random() > 0.5 ? 'multiple_choice' : 'input';
+    
+    if (questionType === 'multiple_choice') {
+        const wrongOptions = getWrongOptions(words, randomWord.russian);
+        const options = [...wrongOptions, randomWord.russian].sort(() => Math.random() - 0.5);
         
-        if (savedWords.length === 0) {
-            // Если нет изученных слов, используем демо-вопрос
-            resolve(getDemoQuestion());
-            return;
-        }
-        
-        // Выбираем случайное слово из изученных
-        const randomWord = savedWords[Math.floor(Math.random() * savedWords.length)];
-        
-        // Случайно выбираем тип вопроса
-        const questionType = Math.random() > 0.5 ? 'multiple_choice' : 'input';
-        
-        if (questionType === 'multiple_choice') {
-            // Создаем варианты ответов
-            const wrongOptions = getWrongOptions(savedWords, randomWord.russian);
-            const options = [...wrongOptions, randomWord.russian].sort(() => Math.random() - 0.5);
-            
-            resolve({
-                type: 'multiple_choice',
-                question: `Какой перевод имеет слово "${randomWord.english}"?`,
-                correct_answer: randomWord.russian,
-                options: options
-            });
-        } else {
-            resolve({
-                type: 'input',
-                question: `Напишите перевод слова "${randomWord.english}"`,
-                correct_answer: randomWord.russian
-            });
-        }
-    });
+        return {
+            type: 'multiple_choice',
+            question: `Какой перевод имеет слово "${randomWord.english}"?`,
+            correct_answer: randomWord.russian,
+            options: options
+        };
+    } else {
+        return {
+            type: 'input',
+            question: `Напишите перевод слова "${randomWord.english}"`,
+            correct_answer: randomWord.russian
+        };
+    }
 }
 
 function getWrongOptions(words, correctAnswer) {
@@ -761,7 +748,6 @@ function getWrongOptions(words, correctAnswer) {
         }
     }
     
-    // Если недостаточно неправильных вариантов, добавляем базовые
     const basicWrong = ['дом', 'машина', 'дерево', 'солнце', 'вода'];
     while (wrongOptions.length < 3) {
         const randomWrong = basicWrong[Math.floor(Math.random() * basicWrong.length)];
@@ -852,9 +838,8 @@ function checkAnswer(selectedAnswer) {
     const isCorrect = selectedAnswer === gameState.currentQuestion.correct_answer;
     const optionButtons = optionsContainer.querySelectorAll('.option-btn');
     
-    // Показываем правильные/неправильные ответы
     optionButtons.forEach(button => {
-        const buttonText = button.textContent.slice(3); // Убираем букву варианта
+        const buttonText = button.textContent.slice(3);
         button.disabled = true;
         
         if (buttonText === gameState.currentQuestion.correct_answer) {
@@ -952,7 +937,6 @@ function showGameResults() {
     
     restartGameBtn.style.display = 'block';
     
-    // Запускаем конфетти для хороших результатов
     if (percentage >= 60) {
         launchConfetti();
     }
@@ -995,11 +979,6 @@ sourceText.addEventListener('keypress', (e) => {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Приложение загружено!');
     initConfetti();
-    
-    const savedWords = JSON.parse(localStorage.getItem('userWords') || '[]');
-    console.log('Сохраненные слова:', savedWords);
-    
-    // Автофокус на первом поле
     nameInput.focus();
 });
 
