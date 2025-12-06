@@ -1,4 +1,4 @@
- // Получаем элементы
+// Получаем элементы
 const screen1 = document.getElementById('screen1');
 const screen2 = document.getElementById('screen2');
 const screen3 = document.getElementById('screen3');
@@ -616,6 +616,18 @@ wordSearch.addEventListener('keypress', function(e) {
         this.blur(); // Убираем фокус при нажатии Enter
     }
 });
+
+// Получаем кнопку удаления
+const deleteAllWordsBtn = document.getElementById('ButtonDelet').querySelector('button');
+
+// Обработчик нажатия на корзину
+deleteAllWordsBtn.addEventListener('click', () => {
+    if (confirm('Вы уверены, что хотите удалить все изученные слова?')) {
+        localStorage.removeItem('userWords');
+        loadStudiedWords(); // Перезагружаем список
+    }
+});
+
 
 // ==================== ЛОГИКА ИГРЫ ====================
 
