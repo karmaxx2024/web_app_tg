@@ -571,9 +571,14 @@ function loadStudiedWords(filter = '') {
             word.russian;
         
         wordItem.innerHTML = `
-            <div class="word-pair">
-                <span class="word-english">${highlightEnglish}</span> - 
-                <span class="word-translation">${highlightRussian}</span>
+            <div class="word-item-header">
+                <div class="word-pair">
+                    <span class="word-english">${highlightEnglish}</span> - 
+                    <span class="word-translation">${highlightRussian}</span>
+                </div>
+                <button class="delete-word-btn" data-word="${word.english}" title="Удалить слово">
+                    🗑️
+                </button>
             </div>
             <div class="word-example">
                 📝 ${word.example}
@@ -584,7 +589,11 @@ function loadStudiedWords(filter = '') {
         `;
         
         // Добавляем анимацию при клике на слово
-        wordItem.addEventListener('click', function() {
+        wordItem.addEventListener('click', function(e) {
+            // Игнорируем клики по кнопке удаления
+            if (e.target.classList.contains('delete-word-btn')) {
+                return;
+            }
             this.style.animation = 'none';
             setTimeout(() => {
                 this.style.animation = 'wordItemAppear 0.3s ease-out';
@@ -592,7 +601,39 @@ function loadStudiedWords(filter = '') {
         });
         
         wordsList.appendChild(wordItem);
+        
+        // Обработчик для кнопки удаления
+        const deleteBtn = wordItem.querySelector('.delete-word-btn');
+        deleteBtn.addEventListener('click', function(e) {
+            e.stopPropagation(); // Предотвращаем всплытие события
+            const englishWord = this.getAttribute('data-word');
+            const russianWord = word.russian;
+            
+            if (confirm(`Вы уверены, что хотите удалить слово "${englishWord}" (${russianWord})?`)) {
+                deleteWord(englishWord);
+            }
+        });
     });
+}
+
+// Функция для удаления отдельного слова
+function deleteWord(englishWord) {
+    let words = JSON.parse(localStorage.getItem('userWords') || '[]');
+    
+    // Фильтруем массив, исключая удаляемое слово
+    const filteredWords = words.filter(word => word.english !== englishWord);
+    
+    // Сохраняем обновленный массив
+    localStorage.setItem('userWords', JSON.stringify(filteredWords));
+    
+    // Показываем уведомление
+    showAnimatedMessage(`Слово "${englishWord}" удалено`, 'success');
+    
+    // Перезагружаем список слов с текущим поисковым запросом
+    const currentSearch = wordSearch.value.trim();
+    loadStudiedWords(currentSearch);
+    
+    console.log(`Слово "${englishWord}" удалено из хранилища`);
 }
 
 // Обработчик поиска
@@ -617,17 +658,19 @@ wordSearch.addEventListener('keypress', function(e) {
     }
 });
 
-// Получаем кнопку удаления
-const deleteAllWordsBtn = document.getElementById('ButtonDelet').querySelector('button');
+// Получаем кнопку удаления всех слов
+const deleteAllWordsBtn = document.getElementById('ButtonDelet')?.querySelector('button');
 
-// Обработчик нажатия на корзину
-deleteAllWordsBtn.addEventListener('click', () => {
-    if (confirm('Вы уверены, что хотите удалить все изученные слова?')) {
-        localStorage.removeItem('userWords');
-        loadStudiedWords(); // Перезагружаем список
-    }
-});
-
+// Обработчик нажатия на корзину (удаление всех слов)
+if (deleteAllWordsBtn) {
+    deleteAllWordsBtn.addEventListener('click', () => {
+        if (confirm('Вы уверены, что хотите удалить все изученные слова?')) {
+            localStorage.removeItem('userWords');
+            loadStudiedWords(); // Перезагружаем список
+            showAnimatedMessage('Все слова удалены', 'success');
+        }
+    });
+}
 
 // ==================== ЛОГИКА ИГРЫ ====================
 
