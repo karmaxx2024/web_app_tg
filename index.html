@@ -153,34 +153,49 @@
     </div>
 
     <!-- восьмой экран - изученные слова -->
-    <div id="screen8" class="screen">
-        <div class="container">
-            <div class="studied-words-header">
-                <button id="backToThirdFrom8" class="back-btn oval-back-btn">←</button>
-                <h1>Изученные слова</h1>
+<div id="screen8" class="screen">
+    <div class="container">
+        <div class="studied-words-header">
+            <button id="backToThirdFrom8" class="back-btn oval-back-btn">←</button>
+            <h1>Изученные слова</h1>
+        </div>
+        
+        <!-- Поиск слов -->
+        <div class="search-container">
+            <div class="input-group">
+                <input type="text" id="wordSearch" placeholder="🔍 Поиск слов...">
+                <div class="input-focus"></div>
             </div>
-            
-            <!-- Поиск слов -->
-            <div class="search-container">
-                <div class="input-group">
-                    <input type="text" id="wordSearch" placeholder="🔍 Поиск слов...">
-                    <div class="input-focus"></div>
+        </div>
+        
+        <!-- Список слов -->
+        <div id="wordsList" class="words-list">
+            <!-- Слова будут добавляться динамически -->
+        </div>
+        
+        <!-- Состояние пустого списка -->
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <span class="empty-icon">📚</span>
+            <p>У вас пока нет изученных слов</p>
+            <button id="addFirstWord" class="btn-primary">Добавить первое слово</button>
+        </div>
+        
+        <!-- Панель управления (удаление всех слов) -->
+        <div id="deleteAllPanel" class="delete-panel" style="display: none;">
+            <button id="deleteAllBtn" class="delete-all-btn">
+                <span class="delete-icon">🗑️</span>
+                Удалить все слова
+            </button>
+            <div class="delete-confirm" id="deleteConfirm" style="display: none;">
+                <p>Вы уверены?</p>
+                <div class="confirm-buttons">
+                    <button id="confirmDelete" class="confirm-yes">Да, удалить</button>
+                    <button id="cancelDelete" class="confirm-no">Отмена</button>
                 </div>
-            </div>
-            
-            <!-- Список слов -->
-            <div id="wordsList" class="words-list">
-                <!-- Слова будут добавляться динамически -->
-            </div>
-            
-            <!-- Состояние пустого списка -->
-            <div id="emptyState" class="empty-state" style="display: none;">
-                <span class="empty-icon">📚</span>
-                <p>У вас пока нет изученных слов</p>
-                <button id="addFirstWord" class="btn-primary">Добавить первое слово</button>
             </div>
         </div>
     </div>
+</div>
 
     <!-- Девятый экран - Игра -->
     <div id="screen9" class="screen">
