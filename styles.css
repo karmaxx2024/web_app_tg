@@ -676,6 +676,44 @@ p {
     margin-bottom: 25px;
 }
 
+/* Кнопка удаления всех слов — корзина */
+#ButtonDelet {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+
+#ButtonDelet .menu-btn {
+    background: #ff4d4d;
+    border: none;
+    border-radius: 50%;
+    width: 56px;
+    height: 56px;
+    padding: 0;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(255, 77, 77, 0.4);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#ButtonDelet .menu-btn:hover {
+    background: #ff1a1a;
+    transform: scale(1.05);
+}
+
+#ButtonDelet .btn-icon {
+    font-size: 24px;
+    line-height: 1;
+}
+
 /* Анимации для появления элементов */
 @keyframes wordItemAppear {
     from {
@@ -965,7 +1003,7 @@ p {
         padding: 15px;
         font-size: 14px;
     }
-    
+    м
     .input-answer {
         padding: 15px;
         font-size: 14px;
